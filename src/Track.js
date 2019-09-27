@@ -1,14 +1,14 @@
-'use strict'
+'use strict';
 
-const debug = require('debug')('alarm:track')
+const debug = require('debug')('alarm:track');
 
 import Axios from 'axios'
 import Parser from 'playlist-parser'
 import {getFileExtension} from './StringHelper'
 
 export default class {
-    source
-    stream
+    source;
+    stream;
 
     constructor(source) {
         this.source = source
@@ -22,11 +22,11 @@ export default class {
 
         switch (getFileExtension(this.source)) {
             case 'pls':
-                return this.stream = await this.getStreamFromPlsSource(this.source)
+                return this.stream = await this.getStreamFromPlsSource(this.source);
             case 'm3u':
-                return this.stream = await this.getStreamFromM3uSource(this.source)
+                return this.stream = await this.getStreamFromM3uSource(this.source);
             case 'mp3':
-                return this.stream = this.source
+                return this.stream = this.source;
 
             default:
                 debug('Undefined source type %s. Letting the player handle the raw source.', this.source)
@@ -36,9 +36,9 @@ export default class {
     }
 
     async getStreamFromPlsSource(source) {
-        debug('Building PLS stream for %s', source)
+        debug('Building PLS stream for %s', source);
 
-        const contents = await this.getStreamContentsFromSource(source)
+        const contents = await this.getStreamContentsFromSource(source);
 
         if (contents === false) {
             return null
@@ -46,7 +46,8 @@ export default class {
 
         try {
             return Parser.PLS.parse(contents)[0].file
-        } catch (error) {
+        }
+        catch (error) {
             debug('Unable to parse stream content of %s (error: %s)', source, error.message)
         }
 
@@ -54,9 +55,9 @@ export default class {
     }
 
     async getStreamFromM3uSource(source) {
-        debug('Building M3U stream for %s', source)
+        debug('Building M3U stream for %s', source);
 
-        const contents = await this.getStreamContentsFromSource(source)
+        const contents = await this.getStreamContentsFromSource(source);
 
         if (contents === false) {
             return null
@@ -64,7 +65,8 @@ export default class {
 
         try {
             return Parser.M3U.parse(contents)[0].file
-        } catch (error) {
+        }
+        catch (error) {
             debug('Unable to parse stream content of %s (error: %s)', source, error.message)
         }
 
@@ -72,15 +74,16 @@ export default class {
     }
 
     async getStreamContentsFromSource(source) {
-        debug('Reading stream source of %s', source)
+        debug('Reading stream source of %s', source);
 
         try {
             const response = await Axios(source, {
                 timeout: 3000,
-            })
+            });
 
             return response.data
-        } catch (error) {
+        }
+        catch (error) {
             debug('Unable to get stream contents of %s (error: %s)', source, error.message)
         }
 
@@ -96,11 +99,11 @@ export default class {
     }
 
     static async create(source) {
-        const instance = new this(source)
+        const instance = new this(source);
 
-        debug('Creating new track')
+        debug('Creating new track');
 
-        await instance.load()
+        await instance.load();
 
         return instance
     }

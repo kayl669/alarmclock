@@ -1,0 +1,11 @@
+[Unit]
+Description=AlarmClock
+After=websockerserver.service
+[Service]
+Type=idle
+WorkingDirectory=/home/pi/essai/alarmclock/build
+ExecStart=/usr/local/bin/node /home/pi/essai/alarmclock/build/alarm.js  > /home/pi/essai/alarmclock/scripts/alarmClock.log 2>&1
+User=pi
+
+[Install]
+WantedBy=websockerserver.service

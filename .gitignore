@@ -2,3 +2,5 @@ vm
 audio.mp3
 *.mp3
 /build
+/node_modules
+*.iml

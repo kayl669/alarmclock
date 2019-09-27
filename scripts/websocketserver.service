@@ -1,0 +1,11 @@
+[Unit]
+Description=Websocket server
+After=multi-user.target
+
+[Service]
+Type=idle
+ExecStart=/usr/bin/python3 /home/pi/essai/alarmclock/scripts/websocketserver.py > /home/pi/essai/alarmclock/scripts/websocketserver.log 2>&1
+User=pi
+
+[Install]
+WantedBy=multi-user.target

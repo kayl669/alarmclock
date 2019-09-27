@@ -1,33 +1,33 @@
-'use strict'
+'use strict';
 
-const debug = require('debug')('alarm:playlist')
+const debug = require('debug')('alarm:playlist');
 
 import Track from './Track'
 
 export default class {
-    sources
-    tracks
+    sources;
+    tracks;
 
     constructor(sources) {
         this.sources = sources
     }
 
     async initialize() {
-        debug('Creating playlist tracks from %s sources', this.sources.length)
+        debug('Creating playlist tracks from %s sources', this.sources.length);
 
-        this.tracks = []
+        this.tracks = [];
 
         for (const source of this.sources) {
             if (typeof source !== 'string') {
-                debug('Track source is not a string. Skipping creating track.')
+                debug('Track source is not a string. Skipping creating track.');
 
                 continue
             }
 
-            const track = await Track.create(source)
+            const track = await Track.create(source);
 
             if (track.getStream() === undefined || track.getStream() === null) {
-                debug('Track is missing usable stream. Skipping adding track %s to playlist.', track.getSource())
+                debug('Track is missing usable stream. Skipping adding track %s to playlist.', track.getSource());
 
                 continue
             }
@@ -43,11 +43,11 @@ export default class {
     }
 
     static async create(sources) {
-        const instance = new this(sources)
+        const instance = new this(sources);
 
-        debug('Creating new playlist')
+        debug('Creating new playlist');
 
-        await instance.initialize()
+        await instance.initialize();
 
         return instance
     }

@@ -1,36 +1,36 @@
-'use strict'
+'use strict';
 
-const debug = require('debug')('alarm:player')
+const debug = require('debug')('alarm:player');
 
 import Komponist from 'komponist'
 import Playlist from './Playlist'
 
 export default class {
-    sources
-    playlist
-    player
+    sources;
+    playlist;
+    player;
 
     constructor(sources) {
         this.sources = sources
     }
 
     async initialize() {
-        this.playlist = await Playlist.create(this.sources)
+        this.playlist = await Playlist.create(this.sources);
 
-        this.player = await this.initializePlayer()
+        this.player = await this.initializePlayer();
 
         // Clear the active playlist
-        this.player.clear()
+        this.player.clear();
 
         this.addTracksToPlayer(this.playlist, this.player)
     }
 
     initializePlayer() {
         return new Promise(resolve => {
-            debug('Connecting to Music Player daemon')
+            debug('Connecting to Music Player daemon');
 
             Komponist.createConnection(6600, 'localhost', (ignored, client) => {
-                debug('Connected to Music Player daemon')
+                debug('Connected to Music Player daemon');
 
                 resolve(client)
             })
@@ -44,11 +44,11 @@ export default class {
     }
 
     addTrackToPlayer(track, player) {
-        const stream = track.getStream()
+        const stream = track.getStream();
 
-        debug('Adding track %s to player', stream)
+        debug('Adding track %s to player', stream);
 
-        player.add(stream, function (error) {
+        player.add(stream, function(error) {
             if (error) {
                 debug('Error adding track %s to player (error: %s', stream, error.message)
             }
@@ -60,29 +60,29 @@ export default class {
     }
 
     play() {
-        debug('Starting playback')
+        debug('Starting playback');
 
         this.player.play()
     }
 
     pause() {
-        debug('Pausing playback')
+        debug('Pausing playback');
 
         this.player.pause()
     }
 
     stop() {
-        debug('Stopping playback')
+        debug('Stopping playback');
 
         this.player.stop()
     }
 
     static async create(sources) {
-        const instance = new this(sources)
+        const instance = new this(sources);
 
-        debug('Creating new player')
+        debug('Creating new player');
 
-        await instance.initialize()
+        await instance.initialize();
 
         return instance
     }

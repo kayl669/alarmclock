@@ -1,29 +1,29 @@
-'use strict'
+'use strict';
 
-const debug = require('debug')('alarm:config')
+const debug = require('debug')('alarm:config');
 
 import readFilePromise from 'fs-readfile-promise'
 import _ from 'lodash'
 
 export default class {
-    path = './config'
-    file
-    config
+    path = './config';
+    file;
+    config;
 
     constructor(file) {
         this.file = file
     }
 
     async load() {
-        const path = `${this.path}/${this.file}`
+        const path = `${this.path}/${this.file}`;
 
-        debug(`Loading configuration file from ${path}`)
+        debug(`Loading configuration file from ${path}`);
 
-        const file = await readFilePromise(path, 'utf8')
+        const file = await readFilePromise(path, 'utf8');
 
-        this.config = JSON.parse(file)
+        this.config = JSON.parse(file);
 
-        debug('Configuration loaded')
+        debug('Configuration loaded');
 
         return this.config
     }
@@ -33,9 +33,9 @@ export default class {
     }
 
     static async create(file) {
-        const instance = new this(file)
+        const instance = new this(file);
 
-        await instance.load()
+        await instance.load();
 
         return instance
     }
