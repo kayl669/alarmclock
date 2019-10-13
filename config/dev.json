@@ -1,15 +1,15 @@
 {
     "volume": 80,
     "alarm": {
+        "activate": true,
         "hour": 18,
         "minute": 1,
         "volumeIncreaseDuration": 2,
         "snoozeAfter": 10
     },
     "tracks": [
-        "http://uk2.internet-radio.com:8024/listen.pls",
-        "https://control.internet-radio.com:2199/tunein/ukvibes.pls",
-        "http://stream.house-radio.com:8000/main.m3u",
-        "http://mp3.streampower.be/stubru-high.mp3"
+        "http://streaming.radio.rtl2.fr/rtl2-1-48-192",
+        "http://cdn.nrjaudio.fm/audio1/fr/30201/mp3_128.mp3?origine=fluxradios",
+        "http://rfm-live-mp3-128.scdn.arkena.com/rfm.mp3"
     ]
 }

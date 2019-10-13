@@ -32,6 +32,17 @@ export default class {
         return _.get(this.config, key)
     }
 
+    set(key, value) {
+        return _.set(this.config, key, value)
+    }
+
+    static async save() {
+        const fs = require('fs');
+        let data = JSON.stringify(this.config);
+        const path = `${this.path}/${this.file}`;
+        fs.writeFileSync(path, data);
+    }
+
     static async create(file) {
         const instance = new this(file);
 

@@ -14,6 +14,8 @@ export default class {
     volumeIncreaseDuration;
     increaseVolume;
     currentVolume;
+    activate;
+    playing = false;
 
     alarmTime;
     snoozeAfter;
@@ -21,6 +23,7 @@ export default class {
     alarmJob;
     volumeJob;
     alarmEndJob;
+    snoozeEndJob;
 
     constructor(player, volume) {
         this.player = player;
@@ -32,12 +35,16 @@ export default class {
 
         this.cancelAlarmJob();
         this.cancelVolumeJob();
+        this.cancelSnoozeEndJob();
         this.cancelAlarmEndJob();
 
-        this.alarmJob = Schedule.scheduleJob({
-            hour:   this.alarmTime.hour(),
-            minute: this.alarmTime.minute(),
-        }, this.onAlarmStart.bind(this))
+        if (this.activate) {
+            debug('Activate clock');
+            this.alarmJob = Schedule.scheduleJob({
+                hour:   this.alarmTime.hour(),
+                minute: this.alarmTime.minute(),
+            }, this.onAlarmStart.bind(this))
+        }
     }
 
     cancelAlarmJob() {
@@ -55,6 +62,12 @@ export default class {
     cancelAlarmEndJob() {
         if (this.alarmEndJob !== undefined) {
             this.alarmEndJob.cancel()
+        }
+    }
+
+    cancelSnoozeEndJob() {
+        if (this.snoozeEndJob !== undefined) {
+            this.snoozeEndJob.cancel()
         }
     }
 
@@ -85,11 +98,27 @@ export default class {
         }, this.onAlarmEnd.bind(this))
     }
 
+    scheduleSnoozeEndJob() {
+        this.cancelSnoozeEndJob();
+
+        const endTime = Moment();
+
+        endTime.add(1, 'minutes');
+
+        debug('Scheduling alarm end job at %s:%s', endTime.hour(), endTime.minute());
+
+        this.snoozeEndJob = Schedule.scheduleJob({
+            hour:   endTime.hour(),
+            minute: endTime.minute()
+        }, this.onSnoozeEnd.bind(this))
+    }
+
     onAlarmStart() {
         (async () => {
             try {
                 debug('Alarm started! It is now %s.', Moment().format('dddd, MMMM Do YYYY, HH:mm'));
 
+                this.playing = true;
                 this.currentVolume = 0;
 
                 // Wait for the volume to be set to 0, otherwise we sometimes get a
@@ -131,9 +160,22 @@ export default class {
         debug('Alarm reached its end time. It is now %s.', Moment().format('dddd, MMMM Do YYYY, HH:mm'));
 
         this.cancelVolumeJob();
+        this.cancelSnoozeEndJob();
         this.cancelAlarmEndJob();
 
+        this.playing = false;
+
         this.player.stop()
+    }
+
+    onSnoozeEnd() {
+        debug('Snooze reached its end time. It is now %s.', Moment().format('dddd, MMMM Do YYYY, HH:mm'));
+        this.cancelSnoozeEndJob();
+        this.player.play()
+    }
+
+    setActivate(activate) {
+        this.activate = activate
     }
 
     setAlarmTime(hour, minute) {
@@ -161,5 +203,19 @@ export default class {
         debug('Setting snooze duration to %i minutes', minutes);
 
         this.snoozeAfter = minutes
+    }
+
+    snoozeAlarm() {
+        if (this.playing) {
+            debug('Snooze ');
+            this.player.stop();
+            this.scheduleSnoozeEndJob();
+        }
+    }
+
+    stopAlarm() {
+        if (this.playing) {
+            this.onAlarmEnd();
+        }
     }
 }
