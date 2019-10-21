@@ -36,7 +36,7 @@ export default class {
         return _.set(this.config, key, value)
     }
 
-    static async save() {
+    async save() {
         const fs = require('fs');
         let data = JSON.stringify(this.config);
         const path = `${this.path}/${this.file}`;

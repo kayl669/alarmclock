@@ -37,9 +37,9 @@ import Clock from './Clock'
         app.use(bodyParser.json()); // support json encoded bodies
         app.use(bodyParser.urlencoded({extended: true})); // support encoded bodies
         app.use(function(request, response, next) {
-            response.header("Access-Control-Allow-Origin", "*");
-            response.header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT");
-            response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+            response.setHeader('Access-Control-Allow-Origin', '*');
+            response.setHeader('Access-Control-Allow-Methods', `GET, POST, DELETE, PUT`);
+            response.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
             next();
         });
 
@@ -54,6 +54,7 @@ import Clock from './Clock'
             config.set('alarm.volumeIncreaseDuration', alarm.volumeIncreaseDuration);
             config.set('volume', alarm.volume);
             config.set('alarm.snoozeAfter', alarm.snoozeAfter);
+            config.save();
             clock.setActivate(alarm.activate);
             clock.setAlarmTime(alarm.hour, alarm.minute);
             clock.setVolumeIncreaseDuration(alarm.volumeIncreaseDuration);
@@ -70,6 +71,21 @@ import Clock from './Clock'
                 'volumeIncreaseDuration': config.get('alarm.volumeIncreaseDuration'),
                 'volume':                 config.get('volume'),
                 'snoozeAfter':            config.get('alarm.snoozeAfter'),
+            };
+
+            res.json(data);
+        });
+        app.post('/city', function(req, res) {
+            let city = req.body.city;
+            console.log(req.body.city);
+
+            config.set('city', city);
+            config.save();
+            res.sendStatus(200);
+        });
+        app.get('/city', function(req, res) {
+            let data = {
+                'city': config.get('city'),
             };
 
             res.json(data);

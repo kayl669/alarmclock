@@ -1,12 +1,13 @@
 {
-    "volume": 90,
+    "volume": 70,
     "alarm": {
         "activate": true,
         "hour": 9,
         "minute": 0,
         "volumeIncreaseDuration": 5,
-        "snoozeAfter": 360
+        "snoozeAfter": 60
     },
+    "city": "Combaillaux",
     "tracks": [
         "http://streaming.radio.rtl2.fr/rtl2-1-48-192",
         "http://cdn.nrjaudio.fm/audio1/fr/30201/mp3_128.mp3?origine=fluxradios",
