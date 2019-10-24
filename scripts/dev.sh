@@ -1,8 +1,12 @@
 #!/bin/bash
 
 sudo apt-get install curl -y
+sudo apt-get install python3 -y
+sudo apt-get install python3-pip -y
+pip3 install tornado
+pip3 install RPi.GPIO
 
-curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
+curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
 sudo apt-get update
 sudo apt-get install nodejs -y
 

@@ -4,3 +4,5 @@ audio.mp3
 /build
 /node_modules
 *.iml
+alarm.js
+yarn.lock

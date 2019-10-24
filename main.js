@@ -7,6 +7,7 @@ const path = require('path');
 let mainWindow, serve;
 const args = process.argv.slice(1);
 serve = args.some(val => val === '--serve');
+debug = args.some(val => val === '--debug');
 
 if (serve) {
     require('electron-reload')(__dirname, {});
@@ -21,19 +22,23 @@ function createWindow() {
             y:              myScreen.getPrimaryDisplay().workArea.y,
             width:          myScreen.getPrimaryDisplay().workArea.width,
             height:         myScreen.getPrimaryDisplay().workArea.height,
-            fullscreen:     true,
-            kiosk:          true,
-            frame:          false,
+            fullscreen:     !debug,
+            kiosk:          false,
+            frame:          debug,
             webPreferences: {
                 preload: path.join(__dirname, 'preload.js')
             }
         });
 
+        var os = require("os");
         // and load the index.html of the app.
-        mainWindow.loadURL('http://localhost:3000/');
-
+        console.log(os.hostname());
+        console.log(myScreen.getPrimaryDisplay().workArea.width);
+        console.log(myScreen.getPrimaryDisplay().workArea.height);
+        mainWindow.loadURL('http://' + os.hostname() + ':4000/#');
+        mainWindow.maximize();
         // Open the DevTools.
-        // mainWindow.webContents.openDevTools()
+        // mainWindow.webContents.openDevTools();
 
         // Emitted when the window is closed.
         mainWindow.on('closed', function() {

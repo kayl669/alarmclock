@@ -1,4 +1,15 @@
-const path = require('path')
+var webpack = require('webpack');
+var path = require('path');
+var fs = require('fs');
+
+var nodeModules = {};
+fs.readdirSync('node_modules')
+    .filter(function(x) {
+        return ['.bin'].indexOf(x) === -1;
+    })
+    .forEach(function(mod) {
+        nodeModules[mod] = 'commonjs ' + mod;
+    });
 
 module.exports = {
     mode:   'development',
@@ -6,10 +17,10 @@ module.exports = {
 
     entry:  './src/app.js',
     output: {
-        path:     path.resolve(__dirname, 'build'),
+        path:     __dirname,
         filename: 'alarm.js',
     },
-
+    externals: nodeModules,
     module: {
         rules: [
             {
@@ -21,4 +32,4 @@ module.exports = {
             }
         ],
     },
-}
+};
