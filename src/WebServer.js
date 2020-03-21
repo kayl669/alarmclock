@@ -1,6 +1,7 @@
 'use strict';
 
 const debug = require('debug')('alarm:webserver');
+const Wifi = require('rpi-wifi-connection');
 
 export default class {
     mainConfig;
@@ -14,6 +15,8 @@ export default class {
 
     async load() {
         debug('starting');
+        var os = require("os");
+
         this.app = require('express')();
         this.server = require('http').createServer(this.app).listen(4000);
         const path = require('path');
@@ -101,8 +104,105 @@ export default class {
 
             res.json(data);
         }.bind(this));
+        this.app.get('/wifiScan', function(req, res) {
+            if (os.platform() === 'linux') {
+                var wifi = new Wifi();
+                wifi.scan().then((ssids) => {
+                    res.json(ssids);
+                }).catch((error) => {
+                    console.log(error);
+                });
+            }
+            else {
+                new Promise((resolve, reject) => {
+                    res.json([
+                        {
+                            bssid:       "18:62:2c:8f:75:8d",
+                            signalLevel: 5220,
+                            ssid:        "presse-agrume"
+                        }, {
+                            bssid:       "ff:ff:ff:ff:ff:ff",
+                            signalLevel: 20,
+                            ssid:        "orange"
+                        }
+                    ]);
+                });
+            }
+        }.bind(this));
+        this.app.get('/wifiState', function(req, res) {
+            if (os.platform() === 'linux') {
+                var wifi = new Wifi();
+                wifi.getState().then((ssids) => {
+                    res.json(ssids);
+                }).catch((error) => {
+                    console.log(error);
+                });
+            }
+            else {
+                new Promise((resolve, reject) => {
+                    res.json(true);
+                });
+            }
+        }.bind(this));
+        this.app.get('/wifiStatus', function(req, res) {
+            if (os.platform() === 'linux') {
+                var wifi = new Wifi();
+                wifi.getStatus().then((ssids) => {
+                    res.json(ssids);
+                }).catch((error) => {
+                    console.log(error);
+                });
+            }
+            else {
+                new Promise((resolve, reject) => {
+                    res.json({
+                        ssid:       "presse-agrume",
+                        ip_address: "192.168.1.45"
+                    });
+                });
+            }
+        }.bind(this));
+        this.app.get('/wifiNetworks', function(req, res) {
+            if (os.platform() === 'linux') {
+                var wifi = new Wifi();
+                wifi.getNetworks().then((ssids) => {
+                    res.json(ssids);
+                }).catch((error) => {
+                    console.log(error);
+                });
+            }
+            else {
+                new Promise((resolve, reject) => {
+                    res.json([
+                        {
+                            id:   0,
+                            ssid: "presse-agrume"
+                        }
+                    ]);
+                });
+            }
+        }.bind(this));
+        this.app.post('/wifiConnect', function(req, res) {
+            if (os.platform() === 'linux') {
+                var wifi = new Wifi();
+                let connection = req.body;
+                console.log(req.body);
+                wifi.connect({
+                    ssid: connection.ssid,
+                    psk:  connection.psk
+                }).then(() => {
+                    res.json('OK');
+                }).catch((error) => {
+                    res.json('KO');
+                });
+            }
+            else {
+                new Promise((resolve, reject) => {
+                    res.json('OK');
+                });
+            }
+        });
         this.app.get('/config', function(req, res) {
-            var os = require("os");
             let data = {
                 'openWeatherAppId': this.mainConfig.get('openWeatherAppId'),
                 'deezerAppId':      this.mainConfig.get('deezerAppId'),
