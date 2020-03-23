@@ -90,7 +90,7 @@ export default class {
 
             //News tracks to play immediately
             client.on('tracks', function(tracks) {
-
+                debug(tracks);
                 //We update the history
                 let track = this.queue[0];
                 if (track) {

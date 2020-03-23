@@ -2,6 +2,7 @@
 
 const debug = require('debug')('alarm:webserver');
 const Wifi = require('rpi-wifi-connection');
+import Axios from 'axios'
 
 export default class {
     mainConfig;
@@ -103,6 +104,22 @@ export default class {
             };
 
             res.json(data);
+        }.bind(this));
+        this.app.get('/channel.html', function(req, res) {
+            if (req.query.code === undefined) {
+                return res.redirect(
+                    'https://connect.deezer.com/oauth/auth.php?app_id=' + this.mainConfig.get('deezerAppId') + '&perms=basic_access,email&redirect_uri=http://'
+                    + os.hostname().toLowerCase() + ':4000/channel.html', 302);
+            }
+            else {
+                Axios.get('https://connect.deezer.com/oauth/access_token.php?app_id=' + this.mainConfig.get('deezerAppId') + '&secret=' + this.mainConfig.get(
+                    'deezerSecret') + '&code=' + req.query.code).then((response => {
+                    let url1 = 'https://api.deezer.com/user/me?' + response.data;
+                    Axios.get(url1).then((() => {
+                        res.render(path.join(__dirname, "../../clockOS-ui/dist/channel.html"));
+                    }).bind(this));
+                }).bind(this));
+            }
         }.bind(this));
         this.app.get('/wifiScan', function(req, res) {
             if (os.platform() === 'linux') {
@@ -206,8 +223,8 @@ export default class {
             let data = {
                 'openWeatherAppId': this.mainConfig.get('openWeatherAppId'),
                 'deezerAppId':      this.mainConfig.get('deezerAppId'),
-                'server':           'http://' + os.hostname() + ':4000',
-                'api':              'ws://' + os.hostname() + ':6123/websocket',
+                'server':           'http://' + os.hostname().toLowerCase() + ':4000',
+                'api':              'ws://' + os.hostname().toLowerCase() + ':6123/websocket',
             };
 
             res.json(data);

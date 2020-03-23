@@ -32,10 +32,10 @@ function createWindow() {
 
         var os = require("os");
         // and load the index.html of the app.
-        console.log(os.hostname());
+        console.log(os.hostname().toLowerCase());
         console.log(myScreen.getPrimaryDisplay().workArea.width);
         console.log(myScreen.getPrimaryDisplay().workArea.height);
-        mainWindow.loadURL('http://' + os.hostname() + ':4000/#');
+        mainWindow.loadURL('http://' + os.hostname().toLowerCase() + ':4000/#');
         mainWindow.maximize();
         // Open the DevTools.
         // mainWindow.webContents.openDevTools();
