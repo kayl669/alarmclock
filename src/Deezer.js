@@ -98,8 +98,8 @@ export default class {
                     this.queue.splice(0, 1);
                 }
 
-                //We push the new tracks a the beginning of the queue
-                this.queue = tracks.concat(this.queue);
+                //We replace the queue
+                this.queue = tracks;
                 this.mainConfig.set('tracksDeezer', this.queue);
                 this.mainConfig.save();
 

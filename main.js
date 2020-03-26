@@ -26,7 +26,8 @@ function createWindow() {
             kiosk:          false,
             frame:          debug,
             webPreferences: {
-                preload: path.join(__dirname, 'preload.js')
+                nativeWindowOpen: true,
+                preload:          path.join(__dirname, 'preload.js')
             }
         });
 

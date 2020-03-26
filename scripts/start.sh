@@ -18,7 +18,7 @@ if [ ! -c /dev/fb1 ]; then
   sleep 1
 
   mknod /dev/fb1 c $(cat /sys/class/graphics/fb1/dev | tr ':' ' ') || true
-  FRAMEBUFFER=/dev/fb1 startx $ELECTRON_DIR/electron $DIR/../main.js --disable-gpu --enable-logging
+  FRAMEBUFFER=/dev/fb1 startx $ELECTRON_DIR/electron $DIR/../main.js --disable-gpu --enable-logging $*
 else
-  startx $ELECTRON_DIR/electron $DIR/../main.js --disable-gpu --enable-logging
+  startx $ELECTRON_DIR/electron $DIR/../main.js --disable-gpu --enable-logging $*
 fi
