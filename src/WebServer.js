@@ -60,7 +60,7 @@ export default class {
 
         this.app.post('/alarm', function(req, res) {
             let alarm = req.body;
-            console.log(req.body);
+            debug(req.body);
 
             this.mainConfig.set('alarm.activate', alarm.activate);
             this.mainConfig.set('alarm.hour', alarm.hour);
@@ -68,14 +68,16 @@ export default class {
             this.mainConfig.set('alarm.volumeIncreaseDuration', alarm.volumeIncreaseDuration);
             this.mainConfig.set('volume', alarm.volume);
             this.mainConfig.set('alarm.snoozeAfter', alarm.snoozeAfter);
+            this.mainConfig.set('alarm.playlist', alarm.playlist);
             this.mainConfig.save();
             this.clock.setActivate(alarm.activate);
             this.clock.setAlarmTime(alarm.hour, alarm.minute);
             this.clock.setVolumeIncreaseDuration(alarm.volumeIncreaseDuration);
             this.clock.setTargetVolume(alarm.volume);
             this.clock.setSnoozeAfter(alarm.snoozeAfter);
+            this.clock.setPlaylist(alarm.playlist);
             this.clock.start();
-            res.sendStatus(200);
+            res.json('OK');
         }.bind(this));
         this.app.get('/alarm', function(req, res) {
             let data = {
@@ -85,6 +87,7 @@ export default class {
                 'volumeIncreaseDuration': this.mainConfig.get('alarm.volumeIncreaseDuration'),
                 'volume':                 this.mainConfig.get('volume'),
                 'snoozeAfter':            this.mainConfig.get('alarm.snoozeAfter'),
+                'playlist':               this.mainConfig.get('alarm.playlist'),
             };
 
             res.json(data);
@@ -92,11 +95,11 @@ export default class {
 
         this.app.post('/city', function(req, res) {
             let city = req.body.city;
-            console.log(req.body.city);
+            debug(req.body.city);
 
             this.mainConfig.set('city', city);
             this.mainConfig.save();
-            res.sendStatus(200);
+            res.json('OK');
         }.bind(this));
         this.app.get('/city', function(req, res) {
             let data = {
@@ -127,7 +130,7 @@ export default class {
                 wifi.scan().then((ssids) => {
                     res.json(ssids);
                 }).catch((error) => {
-                    console.log(error);
+                    debug(error);
                 });
             }
             else {
@@ -152,7 +155,7 @@ export default class {
                 wifi.getState().then((ssids) => {
                     res.json(ssids);
                 }).catch((error) => {
-                    console.log(error);
+                    debug(error);
                 });
             }
             else {
@@ -167,7 +170,7 @@ export default class {
                 wifi.getStatus().then((ssids) => {
                     res.json(ssids);
                 }).catch((error) => {
-                    console.log(error);
+                    debug(error);
                 });
             }
             else {
@@ -185,7 +188,7 @@ export default class {
                 wifi.getNetworks().then((ssids) => {
                     res.json(ssids);
                 }).catch((error) => {
-                    console.log(error);
+                    debug(error);
                 });
             }
             else {
@@ -203,7 +206,7 @@ export default class {
             if (os.platform() === 'linux') {
                 var wifi = new Wifi();
                 let connection = req.body;
-                console.log(req.body);
+                debug(req.body);
                 wifi.connect({
                     ssid: connection.ssid,
                     psk:  connection.psk
@@ -224,6 +227,7 @@ export default class {
                 'openWeatherAppId': this.mainConfig.get('openWeatherAppId'),
                 'deezerAppId':      this.mainConfig.get('deezerAppId'),
                 'server':           'http://' + os.hostname().toLowerCase() + ':4000',
+                'ws' :              'ws://' + os.hostname().toLowerCase() + ':4000',
                 'api':              'ws://' + os.hostname().toLowerCase() + ':6123/websocket',
             };
 
@@ -231,11 +235,11 @@ export default class {
         }.bind(this));
         this.app.get('/stopAlarm', function(req, res) {
             this.clock.stopAlarm();
-            res.sendStatus(200);
+            res.json('OK');
         }.bind(this));
         this.app.get('/snoozeAlarm', function(req, res) {
             this.clock.snoozeAlarm();
-            res.sendStatus(200);
+            res.json('OK');
         }.bind(this));
     }
 

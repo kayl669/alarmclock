@@ -19,6 +19,7 @@ export default class {
 
     alarmTime;
     snoozeAfter;
+    playlist;
 
     alarmJob;
     volumeJob;
@@ -121,6 +122,7 @@ export default class {
 
                 this.playing = true;
                 this.currentVolume = 0;
+                debug(this.deezer.hasPlayerConnected());
 
                 // Wait for the volume to be set to 0, otherwise we sometimes get a
                 // gap where the volume is high and the player starts playing
@@ -130,7 +132,7 @@ export default class {
                 }
                 else {
                     this.deezer.setVolume(this.currentVolume);
-                    this.deezer.startPlay();
+                    this.deezer.startPlay(this.playlist);
                 }
 
                 this.scheduleVolumeIncreaseJob();
@@ -221,6 +223,11 @@ export default class {
         debug('Setting snooze duration to %i minutes', minutes);
 
         this.snoozeAfter = minutes
+    }
+    setPlaylist(playlist) {
+        debug('Setting playlist %i', playlist);
+
+        this.playlist = playlist
     }
 
     snoozeAlarm() {

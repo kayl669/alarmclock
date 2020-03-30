@@ -11,7 +11,6 @@ export default class {
     volume; //default to 50%
     musicStatus;
     musicPosition;
-    musicMode; // 'Tracks' or 'Radio'
     queue; //Tracks to play
     history; //Tracks already played
     io;
@@ -30,7 +29,6 @@ export default class {
         this.volume = parseInt(50); //default to 50%
         this.musicStatus = 'stop';
         this.musicPosition = 0;
-        this.musicMode = 'tracks'; // 'Tracks' or 'Radio'
         this.queue = this.mainConfig.get('tracksDeezer'); //Tracks to play
         this.history = []; //Tracks already played
 
@@ -104,14 +102,10 @@ export default class {
                 this.mainConfig.save();
 
                 //We send the first track
-                this.updateTrack(track);
+                this.updateTrack(tracks[0]);
 
                 //Broadcast changes to everyone
                 this.infos();
-
-                this.musicMode = 'tracks';
-
-                debug('Tracks');
             }.bind(this));
 
             //New tracks to add to queue
@@ -129,8 +123,6 @@ export default class {
 
                 //Broadcast changes to everyone
                 this.infos();
-
-                this.musicMode = 'tracks';
             }.bind(this));
 
             //Track to remove from queue
@@ -146,38 +138,26 @@ export default class {
 
             //Current track ended, we update the history and the queue and we return the new track
             client.on('end', function(track) {
-                if (this.musicMode === 'tracks') {
-                    //Update history with the current track
-                    this.history.push(track);
+                //Update history with the current track
+                this.history.push(track);
 
-                    //Remove the current track from queue
-                    this.queue.splice(this.queue.indexOf(track), 1);
-                    this.mainConfig.set('tracksDeezer', this.queue);
-                    this.mainConfig.save();
+                //Remove the current track from queue
+                this.queue.splice(this.queue.indexOf(track), 1);
+                this.mainConfig.set('tracksDeezer', this.queue);
+                this.mainConfig.save();
 
-                    //Send the next track
-                    this.updateTrack(this.queue[0]);
+                //Send the next track
+                this.updateTrack(this.queue[0]);
 
-                    //Broadcast changes to everyone
-                    this.infos();
-                }
-                //else players go ahead by themself
+                //Broadcast changes to everyone
+                this.infos();
 
                 debug('End');
             }.bind(this));
 
-            //Play a Radio
-            client.on('radio', function(data) {
-                this.queue = []; //Delete the queue
-                this.io.sockets.in('players').emit('radio', data);
-                this.musicMode = 'radio';
-            }.bind(this));
-
-            //Play a SmartRadio
-            client.on('smartRadio', function(data) {
-                this.queue = []; //Delete the queue
-                this.io.sockets.in('players').emit('smartRadio', data);
-                this.musicMode = 'radio';
+            client.on('playlist', function(data) {
+                debug('playlist ' + data.playlist);
+                this.io.sockets.in('players').emit('playlist', data);
             }.bind(this));
 
             //Players return the current track_id
@@ -240,8 +220,7 @@ export default class {
 
             //Prev
             client.on('prevTrack', function() {
-                //If radio, players have next/prev tracks
-                if (this.musicMode !== 'radio' && this.history.length > 0) {
+                if (this.history.length > 0) {
                     this.queue.unshift(this.history[this.history.length - 1]);
                     this.updateTrack(this.queue[0]);
                 }
@@ -251,8 +230,7 @@ export default class {
 
             //Next
             client.on('nextTrack', function() {
-                //If radio, players have next/prev tracks
-                if (this.musicMode !== 'radio' && this.queue.length > 0) {
+                if (this.queue.length > 0) {
                     this.updateTrack(this.queue[0]);
                 }
 
@@ -276,23 +254,23 @@ export default class {
             }.bind(this));
 
             //Disconnect
-            client.on('disconnect', function() {
+            client.on('disconnect', ((reason) => {
                 debug('Client ' + my_client.id + ' disconnected.');
-
+                debug(reason);
                 if (my_client.status === 'player') {
                     this.players.splice(this.players.indexOf(my_client.id), 1);
                 }
                 else {
                     this.remotes.splice(this.remotes.indexOf(my_client.id), 1);
                 }
-            }.bind(this));
+            }).bind(this));
 
         }.bind(this));
     }
 
-    updateTrack(track) {
+    updateTrack(trackId) {
         debug("updateTrack");
-        this.io.sockets.in('players').emit('track', track);
+        this.io.sockets.in('players').emit('track', trackId);
     }
 
     pause() {
@@ -310,17 +288,9 @@ export default class {
         this.io.sockets.in('players').emit('volume', volume);
     }
 
-    startPlay() {
+    startPlay(playlist) {
         debug("startPlay");
-        let track = this.queue[0];
-        if (track) {
-            this.history.push(track);
-            this.queue.splice(0, 1);
-        }
-
-        debug(track);
-        //We send the first track
-        this.updateTrack(track);
+        this.io.sockets.in('players').emit('playlist', {playlist: playlist});
         this.play();
     }
 
@@ -334,14 +304,11 @@ export default class {
      * @return void
      */
     infos() {
-        debug("Queue");
-        debug(this.queue.length);
         this.io.sockets.emit('infos', {
             remotes:       this.remotes,
             players:       this.players,
             musicPosition: this.musicPosition,
             musicStatus:   this.musicStatus,
-            musicMode:     this.musicMode,
             history:       this.history,
             queue:         this.queue
         });

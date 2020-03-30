@@ -5,7 +5,8 @@
         "hour": 18,
         "minute": 1,
         "volumeIncreaseDuration": 2,
-        "snoozeAfter": 10
+        "snoozeAfter": 10,
+        "playlist": 0
     },
     "city": "Combaillaux",
     "deezerAppId": "",

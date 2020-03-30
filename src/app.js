@@ -31,6 +31,7 @@ import Deezer from './Deezer';
         clock.setVolumeIncreaseDuration(config.get('alarm.volumeIncreaseDuration'));
         clock.setTargetVolume(config.get('volume'));
         clock.setSnoozeAfter(config.get('alarm.snoozeAfter'));
+        clock.setPlaylist(config.get('alarm.playlist'));
 
         clock.start();
     }
