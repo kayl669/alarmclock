@@ -160,6 +160,11 @@ export default class {
                 this.io.sockets.in('players').emit('playlist', data);
             }.bind(this));
 
+            client.on('radio', function(data) {
+                debug('radio ' + data.url + ' ' + data.name);
+                this.io.sockets.in('players').emit('radio', data);
+            }.bind(this));
+
             //Players return the current track_id
             client.on('current', function(data) {
                 if (data.current) {
