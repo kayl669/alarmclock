@@ -29,7 +29,7 @@ export default class {
         this.volume = parseInt(50); //default to 50%
         this.musicStatus = 'stop';
         this.musicPosition = 0;
-        this.queue = this.mainConfig.get('tracksDeezer'); //Tracks to play
+        this.queue = []; //Tracks to play
         this.history = []; //Tracks already played
 
         this.io = require('socket.io').listen(this.server);
@@ -98,8 +98,6 @@ export default class {
 
                 //We replace the queue
                 this.queue = tracks;
-                this.mainConfig.set('tracksDeezer', this.queue);
-                this.mainConfig.save();
 
                 //We send the first track
                 this.updateTrack(tracks[0]);
@@ -113,8 +111,6 @@ export default class {
 
                 //We push the new tracks a the end of the queue
                 this.queue = this.queue.concat(tracks);
-                this.mainConfig.set('tracksDeezer', this.queue);
-                this.mainConfig.save();
 
                 //If players are 'stop', we ask them to play
                 if (this.musicStatus === 'stop') {
@@ -129,8 +125,6 @@ export default class {
             client.on('removeQueue', function(track) {
 
                 this.queue.splice(this.queue.indexOf(track), 1);
-                this.mainConfig.set('tracksDeezer', this.queue);
-                this.mainConfig.save();
 
                 //Broadcast changes to everyone
                 this.infos();
@@ -143,8 +137,6 @@ export default class {
 
                 //Remove the current track from queue
                 this.queue.splice(this.queue.indexOf(track), 1);
-                this.mainConfig.set('tracksDeezer', this.queue);
-                this.mainConfig.save();
 
                 //Send the next track
                 this.updateTrack(this.queue[0]);

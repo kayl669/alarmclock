@@ -6,7 +6,6 @@ import moment from 'moment'
 import Schedule from 'node-schedule'
 
 export default class {
-    player;
     deezer;
     mixer;
     targetVolume;
@@ -26,8 +25,7 @@ export default class {
     alarmEndJob;
     snoozeEndJob;
 
-    constructor(player, deezer, volume) {
-        this.player = player;
+    constructor(deezer, volume) {
         this.deezer = deezer;
         this.mixer = volume;
     }
@@ -127,10 +125,7 @@ export default class {
                 // Wait for the volume to be set to 0, otherwise we sometimes get a
                 // gap where the volume is high and the player starts playing
                 await this.mixer.setVolume(this.currentVolume);
-                if (!this.deezer.hasPlayerConnected()) {
-                    this.player.play();
-                }
-                else {
+                if (this.deezer.hasPlayerConnected()) {
                     this.deezer.setVolume(this.currentVolume);
                     this.deezer.startPlay(this.playlist);
                 }
@@ -175,10 +170,7 @@ export default class {
 
         this.playing = false;
 
-        if (!this.deezer.hasPlayerConnected()) {
-            this.player.stop();
-        }
-        else {
+        if (this.deezer.hasPlayerConnected()) {
             this.deezer.stop();
         }
     }
@@ -186,10 +178,7 @@ export default class {
     onSnoozeEnd() {
         debug('Snooze reached its end time. It is now %s.', moment().format('dddd, MMMM Do YYYY, HH:mm'));
         this.cancelSnoozeEndJob();
-        if (!this.deezer.hasPlayerConnected()) {
-            this.player.play();
-        }
-        else {
+        if (this.deezer.hasPlayerConnected()) {
             this.deezer.play();
         }
     }
@@ -234,10 +223,7 @@ export default class {
         debug('Snoozing');
         if (this.playing) {
             debug('Snooze ');
-            if (!this.deezer.hasPlayerConnected()) {
-                this.player.stop();
-            }
-            else {
+            if (this.deezer.hasPlayerConnected()) {
                 this.deezer.stop();
             }
             this.scheduleSnoozeEndJob();
