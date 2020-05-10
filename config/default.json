@@ -6,6 +6,8 @@
         "minute": 0,
         "volumeIncreaseDuration": 5,
         "snoozeAfter": 60,
+        "type": "",
+        "stationuuid": "",
         "playlist": 0
     },
     "city": "Combaillaux",

@@ -13,6 +13,7 @@ export default class {
     musicPosition;
     queue; //Tracks to play
     history; //Tracks already played
+    stationuuid;
     io;
 
     constructor(mainConfig, server) {
@@ -153,7 +154,7 @@ export default class {
             }.bind(this));
 
             client.on('radio', function(data) {
-                debug('radio ' + data.url + ' ' + data.name);
+                debug('radio ' + data.stationuuid);
                 this.io.sockets.in('players').emit('radio', data);
             }.bind(this));
 
@@ -288,6 +289,12 @@ export default class {
     startPlay(playlist) {
         debug("startPlay");
         this.io.sockets.in('players').emit('playlist', {playlist: playlist});
+        this.play();
+    }
+
+    startRadio(stationuuid) {
+        debug("startRadio");
+        this.io.sockets.in('players').emit('radio', {stationuuid: stationuuid});
         this.play();
     }
 

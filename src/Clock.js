@@ -18,7 +18,9 @@ export default class {
 
     alarmTime;
     snoozeAfter;
+    type;
     playlist;
+    stationuuid;
 
     alarmJob;
     volumeJob;
@@ -111,6 +113,7 @@ export default class {
             hour:   endTime.hour(),
             minute: endTime.minute()
         }, this.onSnoozeEnd.bind(this))
+        return endTime;
     }
 
     onAlarmStart() {
@@ -127,7 +130,12 @@ export default class {
                 await this.mixer.setVolume(this.currentVolume);
                 if (this.deezer.hasPlayerConnected()) {
                     this.deezer.setVolume(this.currentVolume);
-                    this.deezer.startPlay(this.playlist);
+                    if (this.type === 'Deezer') {
+                        this.deezer.startPlay(this.playlist);
+                    }
+                    else {
+                        this.deezer.startRadio(this.stationuuid);
+                    }
                 }
 
                 this.scheduleVolumeIncreaseJob();
@@ -213,10 +221,23 @@ export default class {
 
         this.snoozeAfter = minutes
     }
+
+    setType(type) {
+        debug('Setting type %s', type);
+
+        this.type = type
+    }
+
     setPlaylist(playlist) {
         debug('Setting playlist %i', playlist);
 
         this.playlist = playlist
+    }
+
+    setStationuuid(stationuuid) {
+        debug('Setting stationuuid %s', stationuuid);
+
+        this.stationuuid = stationuuid
     }
 
     snoozeAlarm() {
@@ -226,8 +247,13 @@ export default class {
             if (this.deezer.hasPlayerConnected()) {
                 this.deezer.stop();
             }
-            this.scheduleSnoozeEndJob();
+            return this.scheduleSnoozeEndJob();
         }
+    }
+
+    testAlarm() {
+        debug('testAlarm');
+        this.onAlarmStart();
     }
 
     stopAlarm() {

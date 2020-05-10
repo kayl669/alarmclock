@@ -68,14 +68,18 @@ export default class {
             this.mainConfig.set('alarm.volumeIncreaseDuration', alarm.volumeIncreaseDuration);
             this.mainConfig.set('volume', alarm.volume);
             this.mainConfig.set('alarm.snoozeAfter', alarm.snoozeAfter);
+            this.mainConfig.set('alarm.type', alarm.type);
             this.mainConfig.set('alarm.playlist', alarm.playlist);
+            this.mainConfig.set('alarm.stationuuid', alarm.stationuuid);
             this.mainConfig.save();
             this.clock.setActivate(alarm.activate);
             this.clock.setAlarmTime(alarm.hour, alarm.minute);
             this.clock.setVolumeIncreaseDuration(alarm.volumeIncreaseDuration);
             this.clock.setTargetVolume(alarm.volume);
             this.clock.setSnoozeAfter(alarm.snoozeAfter);
+            this.clock.setType(alarm.type);
             this.clock.setPlaylist(alarm.playlist);
+            this.clock.setStationuuid(alarm.stationuuid);
             this.clock.start();
             res.json('OK');
         }.bind(this));
@@ -87,7 +91,9 @@ export default class {
                 'volumeIncreaseDuration': this.mainConfig.get('alarm.volumeIncreaseDuration'),
                 'volume':                 this.mainConfig.get('volume'),
                 'snoozeAfter':            this.mainConfig.get('alarm.snoozeAfter'),
+                'type':                   this.mainConfig.get('alarm.type'),
                 'playlist':               this.mainConfig.get('alarm.playlist'),
+                'stationuuid':            this.mainConfig.get('alarm.stationuuid')
             };
 
             res.json(data);
@@ -234,12 +240,18 @@ export default class {
             res.json(data);
         }.bind(this));
         this.app.get('/stopAlarm', function(req, res) {
+            debug('stopAlarm');
             this.clock.stopAlarm();
-            res.json('OK');
+            res.json(new Date());
         }.bind(this));
         this.app.get('/snoozeAlarm', function(req, res) {
-            this.clock.snoozeAlarm();
-            res.json('OK');
+            debug('snoozeAlarm');
+            let snoozeAlarmDate = this.clock.snoozeAlarm();
+            res.json(snoozeAlarmDate);
+        }.bind(this));
+        this.app.get('/testAlarm', function(req, res) {
+            this.clock.testAlarm();
+            res.json(new Date());
         }.bind(this));
     }
 
