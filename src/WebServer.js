@@ -28,7 +28,7 @@ export default class {
         }));
         this.app.set('view engine', 'html');
         this.app.engine('html', require('hbs').__express);
-
+        this.app.use(require('nocache')());
         var bodyParser = require('body-parser');
         this.app.use(bodyParser.json()); // support json encoded bodies
         this.app.use(bodyParser.urlencoded({extended: true})); // support encoded bodies
