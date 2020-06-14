@@ -1,11 +1,13 @@
 [Unit]
 Description=AlarmClock
-After=websocketserver.service
+After=network.target
+
 [Service]
-Type=idle
+Type=simple
 WorkingDirectory=/home/pi/alarmclock
-ExecStart=/usr/local/bin/node /home/pi/alarmclock/alarm.js  > /home/pi/alarmclock/scripts/alarmClock.log 2>&1
+ExecStart=/usr/local/bin/node /home/pi/alarmclock/alarm.js
 User=pi
+Restart=on-failure
 
 [Install]
-WantedBy=websocketserver.service
+WantedBy=multi-user.target

@@ -1,6 +1,6 @@
 [Unit]
 Description=Websocket server
-After=multi-user.target
+After=network.target
 
 [Service]
 Type=idle
