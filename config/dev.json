@@ -2,6 +2,7 @@
     "volume": 80,
     "alarm": {
         "activate": true,
+        "dayOfWeek": [],
         "hour": 18,
         "minute": 1,
         "volumeIncreaseDuration": 2,

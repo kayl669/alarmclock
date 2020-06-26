@@ -23,6 +23,7 @@ import Deezer from './Deezer';
         webServer.setClock(clock);
 
         clock.setActivate(config.get('alarm.activate'));
+        clock.setAlarmDayOfWeek(config.get('alarm.dayOfWeek'));
         clock.setAlarmTime(config.get('alarm.hour'), config.get('alarm.minute'));
         clock.setVolumeIncreaseDuration(config.get('alarm.volumeIncreaseDuration'));
         clock.setTargetVolume(config.get('volume'));

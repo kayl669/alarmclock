@@ -63,6 +63,7 @@ export default class {
             debug(req.body);
 
             this.mainConfig.set('alarm.activate', alarm.activate);
+            this.mainConfig.set('alarm.dayOfWeek', alarm.dayOfWeek);
             this.mainConfig.set('alarm.hour', alarm.hour);
             this.mainConfig.set('alarm.minute', alarm.minute);
             this.mainConfig.set('alarm.volumeIncreaseDuration', alarm.volumeIncreaseDuration);
@@ -73,6 +74,7 @@ export default class {
             this.mainConfig.set('alarm.stationuuid', alarm.stationuuid);
             this.mainConfig.save();
             this.clock.setActivate(alarm.activate);
+            this.clock.setAlarmDayOfWeek(alarm.dayOfWeek);
             this.clock.setAlarmTime(alarm.hour, alarm.minute);
             this.clock.setVolumeIncreaseDuration(alarm.volumeIncreaseDuration);
             this.clock.setTargetVolume(alarm.volume);
@@ -86,6 +88,7 @@ export default class {
         this.app.get('/alarm', function(req, res) {
             let data = {
                 'activate':               this.mainConfig.get('alarm.activate'),
+                'dayOfWeek':              this.mainConfig.get('alarm.dayOfWeek'),
                 'hour':                   this.mainConfig.get('alarm.hour'),
                 'minute':                 this.mainConfig.get('alarm.minute'),
                 'volumeIncreaseDuration': this.mainConfig.get('alarm.volumeIncreaseDuration'),
@@ -131,85 +134,38 @@ export default class {
             }
         }.bind(this));
         this.app.get('/wifiScan', function(req, res) {
-            if (os.platform() === 'linux') {
                 var wifi = new Wifi();
                 wifi.scan().then((ssids) => {
                     res.json(ssids);
                 }).catch((error) => {
                     debug(error);
                 });
-            }
-            else {
-                new Promise((resolve, reject) => {
-                    res.json([
-                        {
-                            bssid:       "18:62:2c:8f:75:8d",
-                            signalLevel: 5220,
-                            ssid:        "presse-agrume"
-                        }, {
-                            bssid:       "ff:ff:ff:ff:ff:ff",
-                            signalLevel: 20,
-                            ssid:        "orange"
-                        }
-                    ]);
-                });
-            }
         }.bind(this));
         this.app.get('/wifiState', function(req, res) {
-            if (os.platform() === 'linux') {
                 var wifi = new Wifi();
                 wifi.getState().then((ssids) => {
                     res.json(ssids);
                 }).catch((error) => {
                     debug(error);
                 });
-            }
-            else {
-                new Promise((resolve, reject) => {
-                    res.json(true);
-                });
-            }
         }.bind(this));
         this.app.get('/wifiStatus', function(req, res) {
-            if (os.platform() === 'linux') {
                 var wifi = new Wifi();
                 wifi.getStatus().then((ssids) => {
                     res.json(ssids);
                 }).catch((error) => {
                     debug(error);
                 });
-            }
-            else {
-                new Promise((resolve, reject) => {
-                    res.json({
-                        ssid:       "presse-agrume",
-                        ip_address: "192.168.1.45"
-                    });
-                });
-            }
         }.bind(this));
         this.app.get('/wifiNetworks', function(req, res) {
-            if (os.platform() === 'linux') {
                 var wifi = new Wifi();
                 wifi.getNetworks().then((ssids) => {
                     res.json(ssids);
                 }).catch((error) => {
                     debug(error);
                 });
-            }
-            else {
-                new Promise((resolve, reject) => {
-                    res.json([
-                        {
-                            id:   0,
-                            ssid: "presse-agrume"
-                        }
-                    ]);
-                });
-            }
         }.bind(this));
         this.app.post('/wifiConnect', function(req, res) {
-            if (os.platform() === 'linux') {
                 var wifi = new Wifi();
                 let connection = req.body;
                 debug(req.body);
@@ -221,12 +177,6 @@ export default class {
                 }).catch((error) => {
                     res.json('KO');
                 });
-            }
-            else {
-                new Promise((resolve, reject) => {
-                    res.json('OK');
-                });
-            }
         });
         this.app.get('/config', function(req, res) {
             let data = {

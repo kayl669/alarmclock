@@ -17,6 +17,7 @@ export default class {
     playing = false;
 
     alarmTime;
+    alarmDayOfWeek;
     snoozeAfter;
     type;
     playlist;
@@ -42,10 +43,20 @@ export default class {
 
         if (this.activate) {
             debug('Activate clock');
-            this.alarmJob = Schedule.scheduleJob({
-                hour:   this.alarmTime.hour(),
-                minute: this.alarmTime.minute(),
-            }, this.onAlarmStart.bind(this))
+            if (this.alarmDayOfWeek.length > 0) {
+                debug(' with days ', this.alarmDayOfWeek)
+                this.alarmJob = Schedule.scheduleJob({
+                    dayOfWeek: this.alarmDayOfWeek,
+                    hour:      this.alarmTime.hour(),
+                    minute:    this.alarmTime.minute(),
+                }, this.onAlarmStart.bind(this))
+            }
+            else {
+                this.alarmJob = Schedule.scheduleJob({
+                    hour:   this.alarmTime.hour(),
+                    minute: this.alarmTime.minute(),
+                }, this.onAlarmStart.bind(this))
+            }
         }
     }
 
@@ -193,6 +204,12 @@ export default class {
 
     setActivate(activate) {
         this.activate = activate
+    }
+
+    setAlarmDayOfWeek(dayOfWeek) {
+        debug('Setting an alarm for %s', dayOfWeek);
+
+        this.alarmDayOfWeek = dayOfWeek
     }
 
     setAlarmTime(hour, minute) {
