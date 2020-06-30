@@ -49,12 +49,6 @@ export default class {
             next();
         });
 
-        this.app.set('views', path.join(process.cwd(), '../Deezer-Server/views'));
-        this.app.use('/remote', serveStatic(path.join(process.cwd(), '../Deezer-Server/public')));
-        this.app.get('/remote', function(req, res) {
-            res.render('index', {title: "Home"});
-        });
-
         this.app.use(serveStatic(path.join(process.cwd(), '../clockOS-ui/dist')));
         debug('started');
 
@@ -183,8 +177,7 @@ export default class {
                 'openWeatherAppId': this.mainConfig.get('openWeatherAppId'),
                 'deezerAppId':      this.mainConfig.get('deezerAppId'),
                 'server':           'http://' + os.hostname().toLowerCase() + ':4000',
-                'ws' :              'ws://' + os.hostname().toLowerCase() + ':4000',
-                'api':              'ws://' + os.hostname().toLowerCase() + ':6123/websocket',
+                'ws':               'ws://' + os.hostname().toLowerCase() + ':4000',
             };
 
             res.json(data);

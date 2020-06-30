@@ -1,6 +1,9 @@
 'use strict';
 
 const debug = require('debug')('alarm:webserver');
+const rpio = require('rpio');
+const fs = require('fs');
+const exec = require("child_process").exec;
 
 export default class {
     mainConfig;
@@ -8,6 +11,7 @@ export default class {
     clientId; //client_id, will be incremented
     remotes; //list of remotes connected
     players; //list of players connected
+    keypads; //List of keypads connected
     volume; //default to 50%
     musicStatus;
     musicPosition;
@@ -21,11 +25,100 @@ export default class {
         this.server = server;
     }
 
+    pollRight(gpio) {
+        rpio.msleep(20);
+
+        if (rpio.read(gpio)) {
+            return;
+        }
+        this.io.sockets.in('keypad').emit("RIGHT");
+        debug('Button RIGHT pressed on GPIO%d', gpio);
+    }
+
+    pollDown(gpio) {
+        rpio.msleep(20);
+
+        if (rpio.read(gpio)) {
+            return;
+        }
+        this.io.sockets.in('keypad').emit("DOWN");
+        debug('Button DOWN pressed on GPIO%d', gpio);
+    }
+
+    pollUp(gpio) {
+        rpio.msleep(20);
+
+        if (rpio.read(gpio)) {
+            return;
+        }
+        this.io.sockets.in('keypad').emit("UP");
+        debug('Button UP pressed on GPIO%d', gpio);
+    }
+
+    pollLight(gpio) {
+        rpio.msleep(20);
+
+        if (rpio.read(gpio)) {
+            return;
+        }
+        this.io.sockets.in('keypad').emit("LIGHT");
+        debug('Button LIGHT pressed on GPIO%d', gpio);
+        fs.readFile('/sys/class/backlight/soc:backlight/brightness', 'utf8', function(err, contents) {
+            if (parseInt(contents) === 1) {
+                exec("sudo sh -c 'echo \"0\" > /sys/class/backlight/soc\:backlight/brightness'");
+            }
+            else {
+                exec("sudo sh -c 'echo \"1\" > /sys/class/backlight/soc\:backlight/brightness'");
+            }
+        });
+    }
+
+    pollSnooze(gpio) {
+        rpio.msleep(20);
+
+        if (rpio.read(gpio)) {
+            return;
+        }
+        this.io.sockets.in('keypad').emit("SNOOZE");
+        debug('Button SNOOZE pressed on GPIO%d', gpio);
+    }
+
+    pollStop(gpio) {
+        rpio.msleep(20);
+
+        if (rpio.read(gpio)) {
+            return;
+        }
+        this.io.sockets.in('keypad').emit("STOP");
+        debug('Button STOP pressed on GPIO%d', gpio);
+    }
+
+    pollLeft(gpio) {
+        rpio.msleep(20);
+
+        if (rpio.read(gpio)) {
+            return;
+        }
+        this.io.sockets.in('keypad').emit("LEFT");
+        debug('Button LEFT pressed on GPIO%d', gpio);
+    }
+
+    pollOK(gpio) {
+        rpio.msleep(20);
+
+        if (rpio.read(gpio)) {
+            return;
+        }
+        this.io.sockets.in('keypad').emit("OK");
+        debug('Button OK pressed on GPIO%d', gpio);
+    }
+
     async load() {
         //Init
         this.clientId = 1;  //client_id, will be incremented
         this.remotes = []; //list of remotes connected
         this.players = []; //list of players connected
+        this.keypads = []; //list of keypads connected
 
         this.volume = parseInt(50); //default to 50%
         this.musicStatus = 'stop';
@@ -34,6 +127,26 @@ export default class {
         this.history = []; //Tracks already played
 
         this.io = require('socket.io').listen(this.server);
+
+        rpio.init({mapping: 'gpio'});   /* Use the GPIOxx numbering */
+
+        rpio.open(0, rpio.INPUT, rpio.PULL_UP);  // GPIO0  Right
+        rpio.open(5, rpio.INPUT, rpio.PULL_UP);  // GPIO5  Down
+        rpio.open(6, rpio.INPUT, rpio.PULL_UP);  // GPIO6  Up
+        rpio.open(13, rpio.INPUT, rpio.PULL_UP);  // GPIO13 Light
+        rpio.open(26, rpio.INPUT, rpio.PULL_UP);  // GPIO26 Snooze
+        rpio.open(1, rpio.INPUT, rpio.PULL_UP);  // GPIO1  Stop
+        rpio.open(12, rpio.INPUT, rpio.PULL_UP);  // GPIO12 Left
+        rpio.open(16, rpio.INPUT, rpio.PULL_UP);  // GPIO16 OK
+
+        rpio.poll(0, (this.pollRight).bind(this), rpio.POLL_LOW);    // GPIO0  Right
+        rpio.poll(5, (this.pollDown).bind(this), rpio.POLL_LOW);     // GPIO5  Down
+        rpio.poll(6, (this.pollUp).bind(this), rpio.POLL_LOW);       // GPIO6  Up
+        rpio.poll(13, (this.pollLight).bind(this), rpio.POLL_LOW);   // GPIO13 Light
+        rpio.poll(26, (this.pollSnooze).bind(this), rpio.POLL_LOW);  // GPIO26 Snooze
+        rpio.poll(1, (this.pollStop).bind(this), rpio.POLL_LOW);     // GPIO1  Stop
+        rpio.poll(12, (this.pollLeft).bind(this), rpio.POLL_LOW);    // GPIO12 Left
+        rpio.poll(16, (this.pollOK).bind(this), rpio.POLL_LOW);      // GPIO16 OK
         /**
          * A new connection
          */
@@ -64,9 +177,14 @@ export default class {
                         my_client.status = 'player';
                         this.players.push(my_client.id); //Update the list
                     }
-                    else {
+                    else if (status === 'remote') {
                         my_client.status = 'remote';
                         this.remotes.push(my_client.id); //Update the list
+                    }
+                    else if (status === 'keypad') {
+                        client.join('keypad'); //Join the room of keypad
+                        my_client.status = 'keypad';
+                        this.keypads.push(my_client.id); //Update the list
                     }
 
                     my_client.status = status;
