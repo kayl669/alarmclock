@@ -28,7 +28,7 @@ if [ ! -c /dev/fb1 ]; then
   sleep 1
 
   mknod /dev/fb1 c $(cat /sys/class/graphics/fb1/dev | tr ':' ' ') || true
-  FRAMEBUFFER=/dev/fb1 startx /usr/bin/chromium-browser  --check-for-update-interval=0 --window-position=-10,-20 --window-size=740,520 --no-borders --noerrdialogs --kiosk --disable-session-crashed-bubble --disable-infobars --disable-gpu --enable-logging http://`hostname`:4000
+  FRAMEBUFFER=/dev/fb1 startx /usr/bin/chromium-browser  --check-for-update-interval=31536000 --window-position=-10,-20 --window-size=740,520 --no-borders --noerrdialogs --kiosk --disable-session-crashed-bubble --disable-infobars --disable-gpu --enable-logging http://`hostname`:4000
 else
-  startx /usr/bin/chromium-browser  --check-for-update-interval=0 --window-position=-10,-20 --window-size=740,520 --no-borders --noerrdialogs --kiosk --disable-session-crashed-bubble --disable-infobars --disable-gpu --enable-logging http://`hostname`:4000
+  startx /usr/bin/chromium-browser  --check-for-update-interval=31536000 --window-position=-10,-20 --window-size=740,520 --no-borders --noerrdialogs --kiosk --disable-session-crashed-bubble --disable-infobars --disable-gpu --enable-logging http://`hostname`:4000
 fi

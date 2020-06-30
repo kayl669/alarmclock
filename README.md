@@ -2,8 +2,6 @@
 
 ## TODO
 
-- [x] Check if Node setTimeOut() bug was solved and KeepAwake is no longer required
-- [x] Exit process every ~2 days at night so Supervisor can restart it and it's refreshed
 - [ ] Read time twice daily from Google calendar
 
 ## Requirements
@@ -22,23 +20,23 @@
 
 See [https://www.npmjs.com/package/speaker]().
 
-### Music Player Daemon
+### Important System Requirements
 
-https://www.musicpd.org/
+##Disable GPIO interrupts
+If running a newer Raspbian release, you will need to add the following line to /boot/config.txt and reboot:
 
-`sudo apt-get install mpd mpc`
+`dtoverlay=gpio-no-irq`
 
-Then see `/etc/mpd.conf`
+Without this you may see crashes with newer kernels when trying to poll for pin changes.
 
-### Supervisor
+Enable /dev/gpiomem access
+By default the module will use /dev/gpiomem when using simple GPIO access. To access this device, your user will need to be a member of the gpio group, and you may need to configure udev with the following rule (as root):
 
-```
-sudo apt-get install supervisor
+$ cat >/etc/udev/rules.d/20-gpiomem.rules <<EOF
+SUBSYSTEM=="bcm2835-gpiomem", KERNEL=="gpiomem", GROUP="gpio", MODE="0660"
+EOF
 
-sudo ln -nfs /home/pi/alarm-clock/supervisord.conf /etc/supervisor/conf.d/alarm.conf
-
-sudo supervisorctl reread && sudo supervisorctl update
-```
+See [https://www.npmjs.com/package/rpio]()
 
 ## References
 
