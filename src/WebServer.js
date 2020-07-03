@@ -177,7 +177,6 @@ export default class {
                 'openWeatherAppId': this.mainConfig.get('openWeatherAppId'),
                 'deezerAppId':      this.mainConfig.get('deezerAppId'),
                 'server':           'http://' + os.hostname().toLowerCase() + ':4000',
-                'ws':               'ws://' + os.hostname().toLowerCase() + ':4000',
             };
 
             res.json(data);

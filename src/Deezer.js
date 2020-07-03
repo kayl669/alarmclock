@@ -271,17 +271,17 @@ export default class {
                 this.io.sockets.in('players').emit('playlist', data);
             }.bind(this));
 
-            client.on('radio', function(data) {
-                debug('radio ' + data.stationuuid);
-                this.io.sockets.in('players').emit('radio', data);
+            client.on('radio', function(radio) {
+                this.startRadio(radio.stationuuid);
             }.bind(this));
 
             //Players return the current track_id
             client.on('current', function(data) {
                 if (data.current) {
                     this.queue[0] = data.current; //Current track
-                    this.musicStatus = data.musicStatus;
                 }
+                this.musicStatus = data.musicStatus;
+                this.stationuuid = data.stationuuid;
                 //Broadcast changes to everyone
                 this.infos();
 
@@ -321,7 +321,6 @@ export default class {
 
                 //Update Volume
                 this.setVolume(this.volume);
-                debug(this.queue.length);
             }.bind(this));
 
             //Pause
@@ -406,12 +405,14 @@ export default class {
 
     startPlay(playlist) {
         debug("startPlay");
+        this.stationuuid = '';
         this.io.sockets.in('players').emit('playlist', {playlist: playlist});
         this.play();
     }
 
     startRadio(stationuuid) {
         debug("startRadio");
+        this.stationuuid = stationuuid;
         this.io.sockets.in('players').emit('radio', {stationuuid: stationuuid});
         this.play();
     }
@@ -432,7 +433,8 @@ export default class {
             musicPosition: this.musicPosition,
             musicStatus:   this.musicStatus,
             history:       this.history,
-            queue:         this.queue
+            queue:         this.queue,
+            stationuuid:   this.stationuuid
         });
     }
 
