@@ -1,7 +1,7 @@
 'use strict';
 
 const debug = require('debug')('alarm:webserver');
-const rpio = require('rpio');
+const Gpio = require('onoff').Gpio;
 const fs = require('fs');
 const exec = require("child_process").exec;
 
@@ -25,44 +25,36 @@ export default class {
         this.server = server;
     }
 
-    pollRight(gpio) {
-        rpio.msleep(20);
-
-        if (rpio.read(gpio)) {
-            return;
+    pollRight(err, value) {
+        if (err) {
+            throw err;
         }
         this.io.sockets.in('keypad').emit("RIGHT");
-        debug('Button RIGHT pressed on GPIO%d', gpio);
+        debug('Button RIGHT pressed', value);
     }
 
-    pollDown(gpio) {
-        rpio.msleep(20);
-
-        if (rpio.read(gpio)) {
-            return;
+    pollDown(err, value) {
+        if (err) {
+            throw err;
         }
         this.io.sockets.in('keypad').emit("DOWN");
-        debug('Button DOWN pressed on GPIO%d', gpio);
+        debug('Button DOWN pressed', value);
     }
 
-    pollUp(gpio) {
-        rpio.msleep(20);
-
-        if (rpio.read(gpio)) {
-            return;
+    pollUp(err, value) {
+        if (err) {
+            throw err;
         }
         this.io.sockets.in('keypad').emit("UP");
-        debug('Button UP pressed on GPIO%d', gpio);
+        debug('Button UP pressed', value);
     }
 
-    pollLight(gpio) {
-        rpio.msleep(20);
-
-        if (rpio.read(gpio)) {
-            return;
+    pollLight(err, value) {
+        if (err) {
+            throw err;
         }
         this.io.sockets.in('keypad').emit("LIGHT");
-        debug('Button LIGHT pressed on GPIO%d', gpio);
+        debug('Button LIGHT pressed', value);
         fs.readFile('/sys/class/backlight/soc:backlight/brightness', 'utf8', function(err, contents) {
             if (parseInt(contents) === 1) {
                 exec("sudo sh -c 'echo \"0\" > /sys/class/backlight/soc\:backlight/brightness'");
@@ -73,44 +65,36 @@ export default class {
         });
     }
 
-    pollSnooze(gpio) {
-        rpio.msleep(20);
-
-        if (rpio.read(gpio)) {
-            return;
+    pollSnooze(err, value) {
+        if (err) {
+            throw err;
         }
         this.io.sockets.in('keypad').emit("SNOOZE");
-        debug('Button SNOOZE pressed on GPIO%d', gpio);
+        debug('Button SNOOZE pressed', value);
     }
 
-    pollStop(gpio) {
-        rpio.msleep(20);
-
-        if (rpio.read(gpio)) {
-            return;
+    pollStop(err, value) {
+        if (err) {
+            throw err;
         }
         this.io.sockets.in('keypad').emit("STOP");
-        debug('Button STOP pressed on GPIO%d', gpio);
+        debug('Button STOP pressed', value);
     }
 
-    pollLeft(gpio) {
-        rpio.msleep(20);
-
-        if (rpio.read(gpio)) {
-            return;
+    pollLeft(err, value) {
+        if (err) {
+            throw err;
         }
         this.io.sockets.in('keypad').emit("LEFT");
-        debug('Button LEFT pressed on GPIO%d', gpio);
+        debug('Button LEFT pressed', value);
     }
 
-    pollOK(gpio) {
-        rpio.msleep(20);
-
-        if (rpio.read(gpio)) {
-            return;
+    pollOK(err, value) {
+        if (err) {
+            throw err;
         }
         this.io.sockets.in('keypad').emit("OK");
-        debug('Button OK pressed on GPIO%d', gpio);
+        debug('Button OK pressed', value);
     }
 
     async load() {
@@ -127,26 +111,60 @@ export default class {
         this.history = []; //Tracks already played
 
         this.io = require('socket.io').listen(this.server);
+        if (Gpio.accessible) {
+            const button0 = new Gpio(0, 'in', 'falling', {
+                activeLow:       true,
+                debounceTimeout: 10
+            });
+            button0.watch((this.pollRight).bind(this));   // GPIO0  Right
+            const button5 = new Gpio(5, 'in', 'falling', {
+                activeLow:       true,
+                debounceTimeout: 10
+            });
+            button5.watch((this.pollDown).bind(this));    // GPIO5  Down
+            const button6 = new Gpio(6, 'in', 'falling', {
+                activeLow:       true,
+                debounceTimeout: 10
+            });
+            button6.watch((this.pollUp).bind(this));      // GPIO6  Up
+            const button13 = new Gpio(13, 'in', 'falling', {
+                activeLow:       true,
+                debounceTimeout: 10
+            });
+            button13.watch((this.pollLight).bind(this));  // GPIO13 Light
+            const button26 = new Gpio(26, 'in', 'falling', {
+                activeLow:       true,
+                debounceTimeout: 10
+            });
+            button26.watch((this.pollSnooze).bind(this)); // GPIO26 Snooze
+            const button1 = new Gpio(1, 'in', 'falling', {
+                activeLow:       true,
+                debounceTimeout: 10
+            });
+            button1.watch((this.pollStop).bind(this));    // GPIO1  Stop
+            const button12 = new Gpio(12, 'in', 'falling', {
+                activeLow:       true,
+                debounceTimeout: 10
+            });
+            button12.watch((this.pollLeft).bind(this));   // GPIO12 Left
+            const button16 = new Gpio(16, 'in', 'falling', {
+                activeLow:       true,
+                debounceTimeout: 10
+            });
+            button16.watch((this.pollOK).bind(this));     // GPIO16 OK
 
-        rpio.init({mapping: 'gpio'});   /* Use the GPIOxx numbering */
+            process.on('SIGINT', _ => {
+                button0.unexport();
+                button5.unexport();
+                button6.unexport();
+                button13.unexport();
+                button26.unexport();
+                button1.unexport();
+                button12.unexport();
+                button16.unexport();
+            });
+        }
 
-        rpio.open(0, rpio.INPUT, rpio.PULL_UP);  // GPIO0  Right
-        rpio.open(5, rpio.INPUT, rpio.PULL_UP);  // GPIO5  Down
-        rpio.open(6, rpio.INPUT, rpio.PULL_UP);  // GPIO6  Up
-        rpio.open(13, rpio.INPUT, rpio.PULL_UP);  // GPIO13 Light
-        rpio.open(26, rpio.INPUT, rpio.PULL_UP);  // GPIO26 Snooze
-        rpio.open(1, rpio.INPUT, rpio.PULL_UP);  // GPIO1  Stop
-        rpio.open(12, rpio.INPUT, rpio.PULL_UP);  // GPIO12 Left
-        rpio.open(16, rpio.INPUT, rpio.PULL_UP);  // GPIO16 OK
-
-        rpio.poll(0, (this.pollRight).bind(this), rpio.POLL_LOW);    // GPIO0  Right
-        rpio.poll(5, (this.pollDown).bind(this), rpio.POLL_LOW);     // GPIO5  Down
-        rpio.poll(6, (this.pollUp).bind(this), rpio.POLL_LOW);       // GPIO6  Up
-        rpio.poll(13, (this.pollLight).bind(this), rpio.POLL_LOW);   // GPIO13 Light
-        rpio.poll(26, (this.pollSnooze).bind(this), rpio.POLL_LOW);  // GPIO26 Snooze
-        rpio.poll(1, (this.pollStop).bind(this), rpio.POLL_LOW);     // GPIO1  Stop
-        rpio.poll(12, (this.pollLeft).bind(this), rpio.POLL_LOW);    // GPIO12 Left
-        rpio.poll(16, (this.pollOK).bind(this), rpio.POLL_LOW);      // GPIO16 OK
         /**
          * A new connection
          */
