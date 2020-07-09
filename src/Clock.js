@@ -7,7 +7,6 @@ import Schedule from 'node-schedule'
 
 export default class {
     deezer;
-    mixer;
     targetVolume;
     volumeIncreaseSteps = 10;
     volumeIncreaseDuration;
@@ -28,9 +27,8 @@ export default class {
     alarmEndJob;
     snoozeEndJob;
 
-    constructor(deezer, volume) {
+    constructor(deezer) {
         this.deezer = deezer;
-        this.mixer = volume;
     }
 
     start() {
@@ -134,11 +132,8 @@ export default class {
 
                 this.playing = true;
                 this.currentVolume = 0;
-                debug(this.deezer.hasPlayerConnected());
+                debug('Players connected ',this.deezer.hasPlayerConnected());
 
-                // Wait for the volume to be set to 0, otherwise we sometimes get a
-                // gap where the volume is high and the player starts playing
-                await this.mixer.setVolume(this.currentVolume);
                 if (this.deezer.hasPlayerConnected()) {
                     this.deezer.setVolume(this.currentVolume);
                     if (this.type === 'Deezer') {
@@ -162,7 +157,6 @@ export default class {
 
     onAlarmVolumeIncrease() {
         this.currentVolume = Math.ceil(this.currentVolume + this.increaseVolume);
-        this.mixer.setVolume(this.currentVolume);
         this.deezer.setVolume(this.currentVolume);
 
         debug('Increased volume by %i%', this.increaseVolume);
@@ -176,7 +170,6 @@ export default class {
         this.cancelVolumeJob();
 
         this.currentVolume = this.targetVolume;
-        this.mixer.setVolume(this.currentVolume);
         this.deezer.setVolume(this.currentVolume);
     }
 

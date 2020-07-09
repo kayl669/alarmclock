@@ -422,14 +422,14 @@ export default class {
     }
 
     startPlay(playlist) {
-        debug("startPlay");
+        debug("startPlay", playlist);
         this.stationuuid = '';
         this.io.sockets.in('players').emit('playlist', {playlist: playlist});
         this.play();
     }
 
     startRadio(stationuuid) {
-        debug("startRadio");
+        debug("startRadio", stationuuid);
         this.stationuuid = stationuuid;
         this.io.sockets.in('players').emit('radio', {stationuuid: stationuuid});
         this.play();
