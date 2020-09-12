@@ -128,54 +128,56 @@ export default class {
             }
         }.bind(this));
         this.app.get('/wifiScan', function(req, res) {
-                var wifi = new Wifi();
-                wifi.scan().then((ssids) => {
-                    res.json(ssids);
-                }).catch((error) => {
-                    debug(error);
-                });
+            var wifi = new Wifi();
+            wifi.scan().then((ssids) => {
+                res.json(ssids);
+            }).catch((error) => {
+                debug(error);
+            });
         }.bind(this));
         this.app.get('/wifiState', function(req, res) {
-                var wifi = new Wifi();
-                wifi.getState().then((ssids) => {
-                    res.json(ssids);
-                }).catch((error) => {
-                    debug(error);
-                });
+            var wifi = new Wifi();
+            wifi.getState().then((ssids) => {
+                res.json(ssids);
+            }).catch((error) => {
+                debug(error);
+            });
         }.bind(this));
         this.app.get('/wifiStatus', function(req, res) {
-                var wifi = new Wifi();
-                wifi.getStatus().then((ssids) => {
-                    res.json(ssids);
-                }).catch((error) => {
-                    debug(error);
-                });
+            var wifi = new Wifi();
+            wifi.getStatus().then((ssids) => {
+                res.json(ssids);
+            }).catch((error) => {
+                debug(error);
+            });
         }.bind(this));
         this.app.get('/wifiNetworks', function(req, res) {
-                var wifi = new Wifi();
-                wifi.getNetworks().then((ssids) => {
-                    res.json(ssids);
-                }).catch((error) => {
-                    debug(error);
-                });
+            var wifi = new Wifi();
+            wifi.getNetworks().then((ssids) => {
+                res.json(ssids);
+            }).catch((error) => {
+                debug(error);
+            });
         }.bind(this));
         this.app.post('/wifiConnect', function(req, res) {
-                var wifi = new Wifi();
-                let connection = req.body;
-                debug(req.body);
-                wifi.connect({
-                    ssid: connection.ssid,
-                    psk:  connection.psk
-                }).then(() => {
-                    res.json('OK');
-                }).catch((error) => {
-                    res.json('KO');
-                });
+            var wifi = new Wifi();
+            let connection = req.body;
+            debug(req.body);
+            wifi.connect({
+                ssid: connection.ssid,
+                psk:  connection.psk
+            }).then(() => {
+                res.json('OK');
+            }).catch((error) => {
+                res.json('KO');
+            });
         });
         this.app.get('/config', function(req, res) {
             let data = {
                 'openWeatherAppId': this.mainConfig.get('openWeatherAppId'),
                 'deezerAppId':      this.mainConfig.get('deezerAppId'),
+                'youtubeApiKey':    this.mainConfig.get('youtubeApiKey'),
+                'clientId':         this.mainConfig.get('clientId'),
                 'server':           'http://' + os.hostname().toLowerCase() + ':4000',
             };
 

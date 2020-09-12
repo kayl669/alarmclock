@@ -6,7 +6,7 @@ import moment from 'moment'
 import Schedule from 'node-schedule'
 
 export default class {
-    deezer;
+    player;
     targetVolume;
     volumeIncreaseSteps = 10;
     volumeIncreaseDuration;
@@ -27,8 +27,8 @@ export default class {
     alarmEndJob;
     snoozeEndJob;
 
-    constructor(deezer) {
-        this.deezer = deezer;
+    constructor(player) {
+        this.player = player;
     }
 
     start() {
@@ -132,15 +132,15 @@ export default class {
 
                 this.playing = true;
                 this.currentVolume = 0;
-                debug('Players connected ',this.deezer.hasPlayerConnected());
+                debug('Players connected ',this.player.hasPlayerConnected());
 
-                if (this.deezer.hasPlayerConnected()) {
-                    this.deezer.setVolume(this.currentVolume);
-                    if (this.type === 'Deezer') {
-                        this.deezer.startPlay(this.playlist);
+                if (this.player.hasPlayerConnected()) {
+                    this.player.setVolume(this.currentVolume);
+                    if (this.type === 'Playlist') {
+                        this.player.startPlay(this.playlist);
                     }
                     else {
-                        this.deezer.startRadio(this.stationuuid);
+                        this.player.startRadio(this.stationuuid);
                     }
                 }
 
@@ -157,7 +157,7 @@ export default class {
 
     onAlarmVolumeIncrease() {
         this.currentVolume = Math.ceil(this.currentVolume + this.increaseVolume);
-        this.deezer.setVolume(this.currentVolume);
+        this.player.setVolume(this.currentVolume);
 
         debug('Increased volume by %i%', this.increaseVolume);
 
@@ -170,7 +170,7 @@ export default class {
         this.cancelVolumeJob();
 
         this.currentVolume = this.targetVolume;
-        this.deezer.setVolume(this.currentVolume);
+        this.player.setVolume(this.currentVolume);
     }
 
     onAlarmEnd() {
@@ -182,16 +182,16 @@ export default class {
 
         this.playing = false;
 
-        if (this.deezer.hasPlayerConnected()) {
-            this.deezer.stop();
+        if (this.player.hasPlayerConnected()) {
+            this.player.stop();
         }
     }
 
     onSnoozeEnd() {
         debug('Snooze reached its end time. It is now %s.', moment().format('dddd, MMMM Do YYYY, HH:mm'));
         this.cancelSnoozeEndJob();
-        if (this.deezer.hasPlayerConnected()) {
-            this.deezer.play();
+        if (this.player.hasPlayerConnected()) {
+            this.player.play();
         }
     }
 
@@ -254,8 +254,8 @@ export default class {
         debug('Snoozing');
         if (this.playing) {
             debug('Snooze ');
-            if (this.deezer.hasPlayerConnected()) {
-                this.deezer.stop();
+            if (this.player.hasPlayerConnected()) {
+                this.player.stop();
             }
             return this.scheduleSnoozeEndJob();
         }

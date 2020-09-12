@@ -7,7 +7,7 @@ debug('Spinning up alarm clock');
 import Config from './Config'
 import Clock from './Clock'
 import WebServer from './WebServer';
-import Deezer from './Deezer';
+import Player from './Player';
 
 (async () => {
     console.log('Starting');
@@ -15,9 +15,9 @@ import Deezer from './Deezer';
     try {
         const config = await Config.create('default.json');
         const webServer = await WebServer.create(config);
-        const deezer = await Deezer.create(config, webServer.getServer());
+        const player = await Player.create(config, webServer.getServer());
 
-        const clock = await new Clock(deezer);
+        const clock = await new Clock(player);
         webServer.setClock(clock);
 
         clock.setActivate(config.get('alarm.activate'));

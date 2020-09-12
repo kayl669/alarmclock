@@ -13,6 +13,8 @@
     },
     "city": "Combaillaux",
     "deezerAppId": "",
+    "youtubeApiKey": "",
+    "clientId": "",
     "deezerSecret": "",
     "openWeatherAppId": ""
 }
