@@ -194,6 +194,7 @@ export default class {
                         client.join('players'); //Join the room of the players
                         my_client.status = 'player';
                         this.players.push(my_client.id); //Update the list
+                        this.clientInfos(client);
                     }
                     else if (status === 'remote') {
                         my_client.status = 'remote';
@@ -209,8 +210,6 @@ export default class {
 
                     //debug
                     debug('Client ' + my_client.id + ' identified as ' + status + '.');
-
-                    this.clientInfos(client, 'new player '+ my_client.id);
                 }.bind(this));
 
             /**
@@ -229,9 +228,8 @@ export default class {
 
                 //We replace the queue
                 this.queue = tracks;
-
-                //We send the first track
-                this.updateTrack(tracks[0]);
+                this.musicStatus = 'playing';
+                this.stationuuid = '';
 
                 //Broadcast changes to everyone
                 this.infos('tracks');
@@ -245,10 +243,6 @@ export default class {
                 //Remove the current track from queue
                 this.queue.splice(0, 1);
 
-                //Send the next track
-                this.updateTrack(this.queue[0]);
-
-                //Broadcast changes to everyone
                 this.infos('end');
 
                 debug('End');
@@ -279,7 +273,7 @@ export default class {
                 debug('musicStatus');
                 this.musicStatus = status;
                 //Broadcast changes to everyone
-                this.infos('musicstatus');
+                // this.infos('musicstatus');
             }.bind(this));
 
             //Players return music position
@@ -316,7 +310,6 @@ export default class {
                 if (this.history.length > 0) {
                     this.queue.unshift(this.history[this.history.length - 1]);
                     this.history.splice(this.history.length - 1, 1);
-                    this.updateTrack(this.queue[0]);
                     this.infos('prevTrack');
                 }
 
@@ -330,7 +323,6 @@ export default class {
 
                     //Remove the current track from queue
                     this.queue.splice(0, 1);
-                    this.updateTrack(this.queue[0]);
                     this.infos('nextTrack');
                 }
 
@@ -339,18 +331,17 @@ export default class {
 
             //Seek
             client.on('seek', function(seek) {
+                debug('seek', seek);
                 this.io.sockets.in('players').emit('seek', seek);
             }.bind(this));
 
             //Volume
             client.on('volume', function(vol) {
-
                 //Update vol if we stay between 0 and 100
                 this.volume = (this.volume + parseInt(vol) < 0 || this.volume + parseInt(vol) > 100) ? this.volume : this.volume + (parseInt(vol));
 
                 //Update Player
                 this.setVolume(this.volume);
-
             }.bind(this));
 
             //Disconnect
@@ -368,18 +359,22 @@ export default class {
         }.bind(this));
     }
 
-    updateTrack(track) {
-        debug("updateTrack");
-        this.io.sockets.in('players').emit('track', track);
+    playMusic() {
+        debug("playMusic");
+        this.stationuuid = '';
+        this.musicStatus = 'playing';
+        this.io.sockets.in('players').emit('playMusic');
     }
 
     pause() {
         debug("pause");
+        this.musicStatus = 'pause';
         this.io.sockets.in('players').emit('pause');
     }
 
     stop() {
         debug("stop");
+        this.musicStatus = 'stop';
         this.io.sockets.in('players').emit('stop');
     }
 
@@ -391,42 +386,41 @@ export default class {
     startPlay(playlist) {
         debug("startPlay", playlist);
         this.stationuuid = '';
+        this.musicStatus = 'playing';
         this.io.sockets.in('players').emit('playlist', {playlist: playlist});
     }
 
     startRadio(stationuuid) {
         debug("startRadio", stationuuid);
         this.stationuuid = stationuuid;
+        this.queue = [];
         this.musicStatus = 'radio';
         this.io.sockets.in('players').emit('radio', {stationuuid: stationuuid});
     }
 
     play() {
         debug("play");
+        this.musicStatus = 'playing';
         this.io.sockets.in('players').emit('play');
     }
 
-    /**
-     * Broadcast current informations to everyone
-     * @return void
-     */
-    infos(reason) {
-        this.io.sockets.emit('infos', {
+    infos(type) {
+        debug(type);
+        this.io.sockets.emit(type, {
             musicPosition: this.musicPosition,
             musicStatus:   this.musicStatus,
             queue:         this.queue,
             stationuuid:   this.stationuuid,
-            reason:        reason
         });
     }
 
-    clientInfos(client, reason) {
-        client.emit('infos', {
+    clientInfos(client) {
+        debug('clientInfos');
+        client.emit('clientInfos', {
             musicPosition: this.musicPosition,
             musicStatus:   this.musicStatus,
             queue:         this.queue,
             stationuuid:   this.stationuuid,
-            reason:        reason
         });
     }
 
