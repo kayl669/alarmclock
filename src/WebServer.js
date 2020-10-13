@@ -108,7 +108,7 @@ export default class {
         this.app.get('/channel.html', function(req, res) {
             if (req.query.code === undefined) {
                 return res.redirect(
-                    'https://connect.deezer.com/oauth/auth.php?app_id=' + this.mainConfig.get('deezerAppId') + '&perms=basic_access,email&redirect_uri=http://'
+                    'https://connect.deezer.com/oauth/auth.php?app_id=' + this.mainConfig.get('deezerAppId') + '&perms=basic_access,offline_access,email&redirect_uri=http://'
                     + os.hostname().toLowerCase() + ':4000/channel.html', 302);
             }
             else {
@@ -162,17 +162,14 @@ export default class {
                 psk:  connection.psk
             }).then(() => {
                 res.json('OK');
-            }).catch((error) => {
+            }).catch(() => {
                 res.json('KO');
             });
         });
         this.app.get('/config', function(req, res) {
             let data = {
                 'openWeatherAppId': this.mainConfig.get('openWeatherAppId'),
-                'deezerAppId':      this.mainConfig.get('deezerAppId'),
-                'youtubeApiKey':    this.mainConfig.get('youtubeApiKey'),
-                'clientId':         this.mainConfig.get('clientId'),
-                'server':           'http://' + os.hostname().toLowerCase() + ':4000',
+                'deezerAppId':      this.mainConfig.get('deezerAppId')
             };
 
             res.json(data);
