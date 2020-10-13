@@ -10,6 +10,9 @@ export default class {
     app;
     server;
 
+    refresh_token;
+    access_token;
+
     constructor(mainConfig) {
         this.mainConfig = mainConfig;
     }
@@ -22,7 +25,9 @@ export default class {
         this.server = require('http').createServer(this.app).listen(4000);
         const path = require('path');
         const serveStatic = require('serve-static');
+        const nocache = require('nocache');
 
+        this.app.use(nocache());
         this.app.use(require('cors')({
             origin: true
         }));
@@ -32,22 +37,11 @@ export default class {
         var bodyParser = require('body-parser');
         this.app.use(bodyParser.json()); // support json encoded bodies
         this.app.use(bodyParser.urlencoded({extended: true})); // support encoded bodies
-        this.app.use(function(request, response, next) {
-            if (request.headers.origin) {
-                response.header('Access-Control-Allow-Origin', request.headers.origin);
-            }
-            else {
-                response.header('Access-Control-Allow-Origin', '*');
-            }
-            response.setHeader("Access-Control-Allow-Credentials", "true");
-            response.setHeader('Access-Control-Allow-Methods', `GET, POST, DELETE, PUT`);
-            response.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-            let cache_expire = 60 * 60 * 24 * 365;
-            response.setHeader('Pragma', 'public');
-            response.setHeader('Cache-Control', 'maxage=' + cache_expire);
-            response.setHeader('Expires', require('moment')().add(1, 'y').format("ddd, DD MMM YYYY HH:mm:ss G\\MT"));
-            next();
-        });
+
+        this.refresh_token = this.mainConfig.get('refresh_token');
+        if (this.refresh_token !== undefined) {
+            this.refreshToken();
+        }
 
         this.app.use(serveStatic(path.join(process.cwd(), '../clockOS-ui/dist')));
         debug('started');
@@ -197,6 +191,73 @@ export default class {
             this.clock.testAlarm();
             res.json(new Date());
         }.bind(this));
+        this.app.get('/alarmPlaying', function(req, res) {
+            res.json(this.clock.playing);
+        }.bind(this));
+        this.app.get('/auth', function(req, res) {
+            let params = {
+                'client_id':              this.mainConfig.get('clientId'),
+                'scope':                  'email openid https://www.googleapis.com/auth/youtube.readonly',
+                'access_type':            'offline',
+                'include_granted_scopes': 'true',
+            };
+            Axios.post('https://oauth2.googleapis.com/device/code', params).then((response => {
+                let deviceCode = response.data.device_code;
+                let interval = response.data.interval;
+                res.render("auth.html", {
+                    user_code:        response.data.user_code,
+                    verification_url: response.data.verification_url
+                });
+                this.getToken(deviceCode, interval, 60);
+            }).bind(this));
+        }.bind(this));
+        this.app.get('/accessToken', function(req, res) {
+            res.json(this.access_token);
+        }.bind(this));
+
+    }
+
+    getToken(deviceCode, interval, retryCount) {
+        let params = {
+            'client_id':     this.mainConfig.get('clientId'),
+            'client_secret': this.mainConfig.get('client_secret'),
+            'device_code':   deviceCode,
+            'grant_type':    'urn:ietf:params:oauth:grant-type:device_code'
+        };
+        Axios.post('https://oauth2.googleapis.com/token', params).then((response => {
+            debug('refresh_token', response.data.refresh_token);
+            this.mainConfig.set('refresh_token', response.data.refresh_token);
+            this.mainConfig.save();
+            this.refreshToken();
+        }), ((reason) => {
+            let status = reason.response.status;
+            if (status === 428 && retryCount > 0) {
+                debug(reason.response.statusText, retryCount);
+                setTimeout((() => {
+                    this.getToken(deviceCode, interval, retryCount - 1);
+                }).bind(this), 1000 * interval);
+            }
+        }));
+    }
+
+    refreshToken() {
+        let params = {
+            'client_id':     this.mainConfig.get('clientId'),
+            'client_secret': this.mainConfig.get('client_secret'),
+            'refresh_token': this.mainConfig.get('refresh_token'),
+            'grant_type':    'refresh_token'
+        };
+        Axios.post('https://oauth2.googleapis.com/token', params).then((response => {
+            debug("access_token", response.data.access_token);
+            this.access_token = response.data.access_token;
+            setTimeout((() => {
+                this.refreshToken();
+            }).bind(this), 600000);
+        }), (() => {
+            debug("rejected token", this.refresh_token);
+            this.refresh_token = "";
+            this.access_token = "";
+        }));
     }
 
     getServer() {
