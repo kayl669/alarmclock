@@ -40,7 +40,7 @@ export default class {
 
         this.refresh_token = this.mainConfig.get('refresh_token');
         if (this.refresh_token !== undefined) {
-            this.refreshToken();
+            this.refreshToken(5);
         }
 
         this.app.use(serveStatic(path.join(process.cwd(), '../clockOS-ui/dist')));
@@ -225,7 +225,7 @@ export default class {
             debug('refresh_token', response.data.refresh_token);
             this.mainConfig.set('refresh_token', response.data.refresh_token);
             this.mainConfig.save();
-            this.refreshToken();
+            this.refreshToken(5);
         }), ((reason) => {
             let status = reason.response.status;
             if (status === 428 && retryCount > 0) {
@@ -237,7 +237,7 @@ export default class {
         }));
     }
 
-    refreshToken() {
+    refreshToken(retryCount) {
         let params = {
             'client_id':     this.mainConfig.get('clientId'),
             'client_secret': this.mainConfig.get('client_secret'),
@@ -248,12 +248,19 @@ export default class {
             debug("access_token", response.data.access_token);
             this.access_token = response.data.access_token;
             setTimeout((() => {
-                this.refreshToken();
+                this.refreshToken(5);
             }).bind(this), 600000);
-        }), (() => {
-            debug("rejected token", this.refresh_token);
-            this.refresh_token = "";
-            this.access_token = "";
+        }), ((reason) => {
+            if (retryCount > 0) {
+                debug(reason.response.statusText, retryCount);
+                setTimeout((() => {
+                    this.refreshToken(retryCount - 1);
+                }).bind(this), 10000);
+            }
+            else {
+                this.refresh_token = "";
+                this.access_token = "";
+            }
         }));
     }
 
