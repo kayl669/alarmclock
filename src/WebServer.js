@@ -43,7 +43,7 @@ export default class {
             this.refreshToken(5);
         }
 
-        this.app.use(serveStatic(path.join(process.cwd(), '../clockOS-ui/dist')));
+        this.app.use(serveStatic(path.join(process.cwd(), 'node_modules/clockOS-ui')));
         debug('started');
 
         this.app.post('/alarm', function(req, res) {
@@ -116,7 +116,7 @@ export default class {
                     'deezerSecret') + '&code=' + req.query.code).then((response => {
                     let url1 = 'https://api.deezer.com/user/me?' + response.data;
                     Axios.get(url1).then((() => {
-                        res.render(path.join(__dirname, "../../clockOS-ui/dist/channel.html"));
+                        res.render(path.join(__dirname, "node_modules/clockOS-ui/channel.html"));
                     }).bind(this));
                 }).bind(this));
             }
