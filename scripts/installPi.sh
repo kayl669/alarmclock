@@ -224,6 +224,14 @@ if prompt "Would you like to install Adafruit speaker bonnet?"; then
   curl -sS https://raw.githubusercontent.com/adafruit/Raspberry-Pi-Installer-Scripts/master/i2samp.sh | bash
 fi
 
+if prompt "Would you like to install alarmClock?"; then
+  git clone https://github.com/kayl669/alarmclock.git -b develop
+  cd alarmclock
+  yarn install
+  yarn run build
+  ./scripts/installService.sh
+fi
+
 if prompt "Would you like to reboot now?"; then
   sync && sudo reboot
 fi
