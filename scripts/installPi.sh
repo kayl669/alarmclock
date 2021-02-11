@@ -12,7 +12,7 @@ prompt() {
 sudo apt-get update -y
 sudo apt-get upgrade -y
 
-sudo apt-get install -y curl libts0 bc fbi git evtest libts-bin device-tree-compiler
+sudo apt-get install -y curl libts0 bc fbi git evtest libts-bin device-tree-compiler samba samba-common-bin
 
 #Install VNC
 sudo raspi-config nonint do_vnc 0
@@ -211,6 +211,38 @@ if [[ -z \$DISPLAY && \$XDG_VTNR -eq 1 ]]; then
   startx
 fi
 EOF
+fi
+
+if [ -e /etc/samba/smb.conf ] && grep -q "\[music\]" /etc/samba/smb.conf; then
+  echo "Samba already active"
+else
+  if ! [ -d /home/pi/music ]; then
+    mkdir /home/pi/music
+  fi
+  sudo bash -c 'cat >> /etc/samba/smb.conf <<EOF
+
+# --- added alarmClock $date ---
+interfaces = 127.0.0.0/8 wlan0
+bind interfaces only = yes
+
+[music]
+comment = Partage Samba sur reveil
+path = /home/pi/music
+public = yes
+only guest = yes
+browseable = yes
+read only = no
+writeable = yes
+create mask = 0755
+directory mask = 0755
+force create mask = 0755
+force directory mask = 0755
+force user = pi
+force group = pi
+
+# --- end alarmClock $date ---
+EOF'
+  sudo service smbd restart
 fi
 
 if prompt "Would you like to install WM8960?"; then

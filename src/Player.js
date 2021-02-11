@@ -14,6 +14,7 @@ export default class {
     keypads; //List of keypads connected
     volume; //default to 50%
     musicStatus;
+    type;
     musicPosition;
     queue; //Tracks to play
     history; //Tracks already played
@@ -106,6 +107,7 @@ export default class {
 
         this.volume = parseInt(50); //default to 50%
         this.musicStatus = 'stop';
+        this.type = 'youtube';
         this.musicPosition = 0;
         this.queue = []; //Tracks to play
         this.history = []; //Tracks already played
@@ -217,7 +219,7 @@ export default class {
              */
 
             //News tracks to play immediately
-            client.on('tracks', function(tracks) {
+            client.on('sendTracks', function(tracks) {
                 debug(tracks);
                 //We update the history
                 let track = this.queue[0];
@@ -229,10 +231,30 @@ export default class {
                 //We replace the queue
                 this.queue = tracks;
                 this.musicStatus = 'playing';
+                this.type = 'youtube';
                 this.stationuuid = '';
 
                 //Broadcast changes to everyone
                 this.infos('tracks');
+            }.bind(this));
+
+            client.on('sendMp3tracks', function(tracks) {
+                debug(tracks);
+                //We update the history
+                let track = this.queue[0];
+                if (track) {
+                    this.history.push(track);
+                    this.queue.splice(0, 1);
+                }
+
+                //We replace the queue
+                this.queue = tracks;
+                this.musicStatus = 'playing';
+                this.type = 'mp3';
+                this.stationuuid = '';
+
+                //Broadcast changes to everyone
+                this.infos('mp3tracks');
             }.bind(this));
 
             //Current track ended, we update the history and the queue and we return the new track
@@ -257,23 +279,11 @@ export default class {
                 this.startRadio(radio.stationuuid);
             }.bind(this));
 
-            //Players return the current track_id
-            client.on('current', function(data) {
-                if (data.current) {
-                    this.queue[0] = data.current; //Current track
-                }
-                this.musicStatus = data.musicStatus;
-                this.stationuuid = data.stationuuid;
-
-                debug('Current');
-            }.bind(this));
-
             //Players return status (play, pause, stop ?)
-            client.on('musicStatus', function(status) {
-                debug('musicStatus');
-                this.musicStatus = status;
-                //Broadcast changes to everyone
-                // this.infos('musicstatus');
+            client.on('musicStatus', function(data) {
+                debug('musicStatus', data);
+                this.musicStatus = data.musicStatus;
+                this.type = data.type;
             }.bind(this));
 
             //Players return music position
@@ -363,6 +373,7 @@ export default class {
         debug("playMusic");
         this.stationuuid = '';
         this.musicStatus = 'playing';
+        this.type = 'mp3';
         this.io.sockets.in('players').emit('playMusic');
     }
 
@@ -387,14 +398,24 @@ export default class {
         debug("startPlay", playlist);
         this.stationuuid = '';
         this.musicStatus = 'playing';
+        this.type = 'youtube';
         this.io.sockets.in('players').emit('playlist', {playlist: playlist});
+    }
+
+    startMp3() {
+        debug("startMp3");
+        this.stationuuid = '';
+        this.musicStatus = 'playing';
+        this.type = 'mp3';
+        this.io.sockets.in('players').emit('playlistMp3', {});
     }
 
     startRadio(stationuuid) {
         debug("startRadio", stationuuid);
         this.stationuuid = stationuuid;
         this.queue = [];
-        this.musicStatus = 'radio';
+        this.musicStatus = 'playing';
+        this.type = 'radio';
         this.io.sockets.in('players').emit('radio', {stationuuid: stationuuid});
     }
 
@@ -404,11 +425,12 @@ export default class {
         this.io.sockets.in('players').emit('play');
     }
 
-    infos(type) {
-        debug(type);
-        this.io.sockets.emit(type, {
+    infos(infoType) {
+        debug(infoType);
+        this.io.sockets.emit(infoType, {
             musicPosition: this.musicPosition,
             musicStatus:   this.musicStatus,
+            type:          this.type,
             queue:         this.queue,
             stationuuid:   this.stationuuid,
         });
@@ -419,6 +441,7 @@ export default class {
         client.emit('clientInfos', {
             musicPosition: this.musicPosition,
             musicStatus:   this.musicStatus,
+            type:          this.type,
             queue:         this.queue,
             stationuuid:   this.stationuuid,
         });

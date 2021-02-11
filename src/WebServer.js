@@ -42,7 +42,20 @@ export default class {
         if (this.refresh_token !== undefined) {
             this.refreshToken(5);
         }
-
+        this.app.get('/music', function(req, res) {
+            var recursive = require("recursive-readdir");
+            recursive(path.join(process.cwd(), '../music'), function(err, files) {
+                var list = [];
+                for (let i = 0; i < files.length; i++) {
+                    if (path.extname(files[i]).toLocaleLowerCase() === '.mp3') {
+                        list.push('http://' + os.hostname().toLowerCase() + ':4000/music/' + path.relative(path.join(process.cwd(), '../music'), files[i])
+                            .split(path.sep).join('/'));
+                    }
+                }
+                res.json(list);
+            });
+        }.bind(this));
+        this.app.use('/music', serveStatic(path.join(process.cwd(), '../music')));
         this.app.use(serveStatic(path.join(process.cwd(), 'node_modules/clockOS-ui')));
         debug('started');
 
@@ -229,7 +242,6 @@ export default class {
         }), ((reason) => {
             let status = reason.response.status;
             if (status === 428 && retryCount > 0) {
-                debug(reason.response.statusText, retryCount);
                 setTimeout((() => {
                     this.getToken(deviceCode, interval, retryCount - 1);
                 }).bind(this), 1000 * interval);
@@ -250,9 +262,8 @@ export default class {
             setTimeout((() => {
                 this.refreshToken(5);
             }).bind(this), 600000);
-        }), ((reason) => {
+        }), (() => {
             if (retryCount > 0) {
-                debug(reason.response.statusText, retryCount);
                 setTimeout((() => {
                     this.refreshToken(retryCount - 1);
                 }).bind(this), 10000);

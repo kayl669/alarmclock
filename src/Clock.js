@@ -114,7 +114,7 @@ export default class {
 
         const endTime = moment();
 
-        endTime.add(1, 'minutes');
+        endTime.add(5, 'minutes');
 
         debug('Scheduling alarm end job at %s:%s', endTime.hour(), endTime.minute());
 
@@ -136,11 +136,14 @@ export default class {
 
                 if (this.player.hasPlayerConnected()) {
                     this.player.setVolume(this.currentVolume);
-                    if (this.type === 'Playlist') {
+                    if (this.type === 'youtube') {
                         this.player.startPlay(this.playlist);
                     }
-                    else {
+                    else if (this.type === 'radio') {
                         this.player.startRadio(this.stationuuid);
+                    }
+                    else {
+                        this.player.startMp3();
                     }
                 }
 
