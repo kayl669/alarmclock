@@ -161,6 +161,8 @@ sed -i 's/"exit_type":"Crashed"/"exit_type":"Normal"/' /home/pi/.config/chromium
 /usr/bin/chromium-browser --disable-popup-blocking  \\
                            --autoplay-policy  \\
                            --disable-features=AutoplayIgnoreWebAudio  \\
+                           --disable-features=AudioServiceSandbox  \\
+                           --disable-features=AudioServiceOutOfProcess  \\
                            --no-user-gesture-required  \\
                            --autoplay-policy=no-user-gesture-required  \\
                            --check-for-update-interval=31536000  \\
@@ -246,7 +248,7 @@ EOF'
 fi
 
 if prompt "Would you like to install WM8960?"; then
-  git clone https://github.com/waveshare/WM8960-Audio-HAT
+  git clone https://github.com/Sybility/WM8960-Audio-HAT
   cd WM8960-Audio-HAT
   sudo ./install.sh
   cd ..
